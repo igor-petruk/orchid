@@ -1,0 +1,147 @@
+package com.orchid.messages.generated;
+
+option optimize_for=SPEED;
+
+enum MessageType{
+    INTRODUCE = 1;
+    DISCOVER_FILE = 2;
+    WELCOME_ON_SERVER = 3;
+    
+    GET_FILE_PEERS = 4;
+    FILE_PEERS = 5;
+
+	BLOCK_INFO_REQUEST = 6;
+	BLOCK_INFO_RESPONSE = 7;
+    
+    BLOCK_REQUEST = 8;
+    BLOCK_RESPONSE = 9;
+
+    FILE_INFO_REQUEST = 10;
+    FILE_INFO_RESPONSE = 11;
+
+    SUBMIT_DISCOVERY_NOTIFICATION = 12;
+    DISCOVERY_NOTIFICATION = 13;
+
+    CREATE_FILE = 14;
+    MAKE_DIRECTORY = 15;
+}
+
+// This message tells other peer's name
+message Introduce{
+    required string name = 1;
+    required int32 incomingPort = 2;
+}
+
+// This message informs that file is available
+message DiscoverFile{
+    repeated GeneralFileInfo files = 1;
+}
+
+message CreateFile{
+    required GeneralFileInfo files = 1;
+}
+
+message GetFilePeers{
+	required bytes fileId = 1;
+}
+
+message Peer{
+	required string name = 1;
+	required string address = 2;
+	required int32 port = 3;
+}
+
+message FilePeers{
+	repeated Peer peers = 1;
+}
+
+message GeneralFileInfo{
+    required string fileName = 1;
+    required bytes fileId = 3;
+    optional bool isDirectory = 4  [default = false];
+    optional int32 fileSize = 5 [default = 0];
+}
+
+// This messages server sends after he received INTRODUCE
+message Welcome{
+    optional string welcomeString = 1;
+}
+
+message BlockInfoRequest{
+	required bytes fileId = 1;
+	repeated int32 blockIds = 2;
+}
+
+message BlockInfoResponse{
+	required BlockInfoRequest request = 1;
+	repeated bool blockPresent = 2;
+}
+
+enum BlockCompressionType{
+	NONE = 1;
+	GZIP = 2;
+	BZIP2 = 3;
+}
+
+message BlockRequest{
+	required bytes fileId = 1;
+	required int32 blockId = 2;	
+	optional BlockCompressionType compressionHint = 3 [default=GZIP];
+}
+
+message BlockResponse{
+	required BlockRequest request = 1;
+	required bytes data = 2;
+	optional BlockCompressionType compression = 3 [default=GZIP];  // May differ from what client asked
+}
+
+message FileInfoRequest{
+	optional string name = 1;
+	optional bytes id = 2;
+	optional bool listDirectory = 3 [default=false];
+}
+
+message MakeDirectory {
+	required string path = 1;
+}
+
+message FileInfoResponse{
+	repeated GeneralFileInfo infos = 1;
+}
+
+message SubmitDiscoveryNotification{
+	required string fileName = 1;
+}
+
+message DiscoveryNotification {
+	// reserved
+}
+
+message MessageContainer{
+	
+    required MessageType messageType = 1;
+    optional int32 cookie = 2;
+	
+    optional DiscoverFile discoverFile = 3;
+    optional Welcome welcome = 4;
+
+    optional GetFilePeers getFilePeers = 5;
+    optional FilePeers filePeers = 6;
+
+    optional Introduce introduce = 7;    
+
+    optional BlockInfoRequest blockInfoRequest = 8;    
+    optional BlockInfoResponse blockInfoResponse = 9;    
+    optional BlockRequest blockRequest = 10;    
+    optional BlockResponse blockResponse = 11;    
+
+    optional FileInfoRequest fileInfoRequest = 12;    
+    optional FileInfoResponse fileInfoResponse = 13;    
+
+    optional SubmitDiscoveryNotification submitDiscoveryNotification = 14;    
+    optional DiscoveryNotification discoveryNotification = 15;    
+
+    optional CreateFile createFile = 16;    
+
+    optional MakeDirectory makeDirectory = 17;    
+}
