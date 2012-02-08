@@ -27,20 +27,18 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
+                <groupId>com.github.igor-petruk.protobuf</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.2</version>
                 <executions>
                     <execution>
                         <id>generate-sources</id>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <tasks>
-                                <mkdir dir="src/main/java"/>
-                                <echo>Compiling messages.proto</echo>
-                                <exec executable="protoc" failonerror="true">
-                                    <arg value="--java_out=src/main/java"/>
-                                    <arg value="src/main/proto/messages.proto"/>
-                                </exec>
-                            </tasks>
+                            <inputDirectories>
+                                <param>src/main/proto</param>
+                            </inputDirectories>
+                            <outputDirectory>target/generated-sources/protobuf</outputDirectory>
                         </configuration>
                         <goals>
                             <goal>run</goal>
@@ -52,6 +50,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -61,7 +60,7 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>src/main/java</source>
+                                <source>target/generated-sources/protobuf</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -71,6 +70,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
