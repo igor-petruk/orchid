@@ -29,17 +29,9 @@
             <plugin>
                 <groupId>com.github.igor-petruk.protobuf</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.2</version>
+                <version>0.3</version>
                 <executions>
                     <execution>
-                        <id>generate-sources</id>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <inputDirectories>
-                                <param>src/main/proto</param>
-                            </inputDirectories>
-                            <outputDirectory>target/generated-sources/protobuf</outputDirectory>
-                        </configuration>
                         <goals>
                             <goal>run</goal>
                         </goals>
@@ -47,25 +39,6 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
-                    <execution>
-                        <id>add-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>target/generated-sources/protobuf</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
