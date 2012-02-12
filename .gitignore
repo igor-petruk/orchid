@@ -2,3 +2,5 @@
 */*.iml
 *.iml
 .idea
+nbactions.xml
+*/nbaction.xml
