@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
  */
 public class ServerIntegrationTests {
     final static int SENDERS = 50;
-    final static int MESSAGES = 1000000;
+    final static int MESSAGES = 100000;
     final static int BLOCK_SIZE = 1024;
     final static int WORKERS_COUNT = 4;
 
@@ -85,7 +85,7 @@ public class ServerIntegrationTests {
         public String call() {
             try{
                 Messages.MessageContainer.Builder builder = Messages.MessageContainer.newBuilder();
-                builder.setMessageType(Messages.MessageType.INTRODUCE);
+                builder.setMessageType(Messages.MessageType.ECHO);
                 OutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
 
                 for (int i = 0; i < MESSAGES/SENDERS; i++){
@@ -152,7 +152,7 @@ public class ServerIntegrationTests {
         ArrayList<Future<Void>> receivers = new ArrayList<Future<Void>>();
         ArrayList<Socket> sockets = new ArrayList<Socket>();
         
-        for (int i = 0; i < SENDERS*40; i++){
+        for (int i = 0; i < SENDERS; i++){
             Socket socket = new Socket("localhost", port);
             sockets.add(socket);
         }
@@ -205,53 +205,55 @@ public class ServerIntegrationTests {
             install(Modules.override(new LogicModule()).with(new LogicExtension()));
         }
     }
-}
 
-class MultisetValidatingHandler implements EventHandler<RingElement>{
-    Multiset<String> items = HashMultiset.create();
+    static class MultisetValidatingHandler implements EventHandler<RingElement>{
+        Multiset<String> items = HashMultiset.create();
 
-    @Inject
-    Logger logger;
+        @Inject
+        Logger logger;
 
-    @Inject
-    @Named("messagesCount")
-    int messagesCount;
+        @Inject
+        @Named("messagesCount")
+        int messagesCount;
 
-    @Inject
-    OutputPublisher publisher;
+        @Inject
+        OutputPublisher publisher;
 
-    final Lock lock = new ReentrantLock();
-    Condition done = lock.newCondition();
-    
-    @Override
-    public void onEvent(RingElement event, long sequence, boolean endOfBatch) throws Exception {
-        publisher.send(event, event.userID);
+        final Lock lock = new ReentrantLock();
+        Condition done = lock.newCondition();
 
-        assertNotNull(event.message);
-        assertNotNull(event.userID);
-        items.add(event.message.getIntroduce().getName());
-        if (items.size()==messagesCount){
-            try{
-                lock.lock();
-                done.signal();
-            }finally{
-                lock.unlock();                
+        @Override
+        public void onEvent(RingElement event, long sequence, boolean endOfBatch) throws Exception {
+            publisher.send(event, event.userID);
+
+            assertNotNull(event.message);
+            assertNotNull(event.userID);
+            items.add(event.message.getIntroduce().getName());
+            if (items.size()==messagesCount){
+                try{
+                    lock.lock();
+                    done.signal();
+                }finally{
+                    lock.unlock();
+                }
+            }
+        }
+
+        public Multiset<String> getItems() {
+            return items;
+        }
+
+        public void validate() throws InterruptedException {
+            lock.lock();
+            done.await();
+            lock.unlock();
+            logger.info("Received unique {} messages", items.size());
+            assertEquals(messagesCount, items.size());
+            for (Multiset.Entry<String> entry: items.entrySet()){
+                assertEquals(1,entry.getCount());
             }
         }
     }
 
-    public Multiset<String> getItems() {
-        return items;
-    }
-
-    public void validate() throws InterruptedException {
-        lock.lock();
-        done.await();
-        lock.unlock();
-        logger.info("Received unique {} messages", items.size());
-        assertEquals(messagesCount, items.size());
-        for (Multiset.Entry<String> entry: items.entrySet()){
-            assertEquals(1,entry.getCount());
-        }
-    }
 }
+
