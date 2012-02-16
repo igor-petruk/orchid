@@ -53,7 +53,7 @@ public class OutputWorker extends Worker implements EventProcessor {
             @Override
             public Thread newThread(Runnable runnable) {
                 Thread thread = new Thread(runnable);
-                String name = "OutputWorker-" + this;
+                String name = "OutputWorker ring thread -" + this;
                 System.out.println("Starting " + name);
                 thread.setName(name);
                 return thread;
@@ -123,7 +123,7 @@ public class OutputWorker extends Worker implements EventProcessor {
                 while(keyIterator.hasNext()){
                     SelectionKey selectionKey = keyIterator.next();
                     Connection connection = (Connection)selectionKey.attachment();
-                    if (!handleWrite(connection));{
+                    if (!handleWrite(connection)){
                         selectionKey.cancel();
                     }
                     keyIterator.remove();
@@ -158,6 +158,17 @@ public class OutputWorker extends Worker implements EventProcessor {
             }
         }
     }
+
+    public void disposeConnection(Connection connection){
+        if (connection.isCurrentlySending()){
+            synchronized (this){
+                activeConnections --;
+                connection.setCurrentlySending(false);
+                connection.dispose();
+            }
+        }
+    }
+
 
     private boolean handleWrite(Connection connection){
         ExpandingBuffer expandingBuffer = connection.getExpandingBuffer();
@@ -198,11 +209,15 @@ public class OutputWorker extends Worker implements EventProcessor {
 
     private void handleMessage(RingElement ringElement) throws ClosedChannelException{
         Connection connection = ringElement.userID.getConnection();
-        activateConnection(connection);
-        if (!connection.getOutputQueue().offer(ringElement.message)){
-            logger.error("Unable to offer message {}", ringElement.message);
+        if (connection.getOutputKey().isValid()){
+            activateConnection(connection);
+            if (!connection.getOutputQueue().offer(ringElement.message)){
+                logger.error("Unable to offer message {}", ringElement.message);
+            }else{
+                //   logger.info("Successfully offered to {}", connection);
+            }
         }else{
-         //   logger.info("Successfully offered to {}", connection);
+            disposeConnection(connection);
         }
     }
 

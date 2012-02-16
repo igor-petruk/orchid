@@ -77,4 +77,8 @@ public class Connection {
     public void setCurrentlySending(boolean currentlySending) {
         this.currentlySending = currentlySending;
     }
+
+    public void dispose(){
+
+    }
 }

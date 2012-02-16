@@ -78,6 +78,7 @@ public class InputWorker extends Worker implements Runnable{
                         continue;
                     }
                 }
+               // System.out.println("selected"+System.currentTimeMillis());
             }catch(Exception e){
                  if(Thread.interrupted()){
                      break;

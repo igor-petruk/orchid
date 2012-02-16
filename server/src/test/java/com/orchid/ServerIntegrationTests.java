@@ -129,29 +129,38 @@ public class ServerIntegrationTests {
             int messagesCount = MESSAGES/SENDERS;
             while(messagesCount>0){
                 int data = dataInputStream.readInt();
-                dataInputStream.skip(data);
+                long leftSkipping = data;
+                while (leftSkipping!=0){
+                long skipped = dataInputStream.skip(data);
+                    if (skipped==-1){
+                        throw new IllegalStateException("Something is wrong");
+                    }
+                    leftSkipping -= skipped;
+                }
                 messagesCount--;
-            //    System.out.println(messagesCount);
             }
-         //   System.out.println("Done");
             return null;
         }
     }
 
     @Test
     public void testLargeMessageFlowInput() throws Exception {
-        MDC.put("subsystem","test");
+        MDC.put("subsystem", "test");
         server.start();
-        Thread.sleep(10 * 3600 * 1000);
         ExecutorService service = Executors.newCachedThreadPool();
         ArrayList<Future<String>> s = new ArrayList<Future<String>>();
         ArrayList<Future<Void>> receivers = new ArrayList<Future<Void>>();
-
-        long tick = System.currentTimeMillis();
+        ArrayList<Socket> sockets = new ArrayList<Socket>();
+        
         for (int i = 0; i < SENDERS; i++){
             Socket socket = new Socket("localhost", port);
-            s.add(service.submit(new SendingThread(socket)));
-            receivers.add(service.submit(new ReceivingThread(socket)));
+            sockets.add(socket);
+        }
+        Thread.sleep(1000);
+        long tick = System.currentTimeMillis();
+        for (int i = 0; i < SENDERS; i++){
+            s.add(service.submit(new SendingThread(sockets.get(i))));
+            receivers.add(service.submit(new ReceivingThread(sockets.get(i))));
         }
         for (int i = 0; i < s.size(); i++){
             s.get(i).get();
@@ -216,7 +225,6 @@ class MultisetValidatingHandler implements EventHandler<RingElement>{
     
     @Override
     public void onEvent(RingElement event, long sequence, boolean endOfBatch) throws Exception {
-        System.out.println(event.message);
         publisher.send(event, event.userID);
 
         assertNotNull(event.message);
