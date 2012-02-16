@@ -59,7 +59,7 @@ public class SelectorAccepter implements ConnectionAccepter, Runnable{
                     serverSocketChannel.socket().bind(new InetSocketAddress(port));
                     break;
                 } catch (IOException e) {
-                    logger.info("Retry {}"+port);
+                    logger.info("Retrying with port {}",port);
                     port++;
                     continue;
                 }
