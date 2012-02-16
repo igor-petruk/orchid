@@ -2,3 +2,5 @@
 */*.iml
 *.iml
 .idea
+*/logs/
+logs/
