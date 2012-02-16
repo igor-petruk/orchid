@@ -24,6 +24,8 @@ enum MessageType{
 
     CREATE_FILE = 14;
     MAKE_DIRECTORY = 15;
+
+    ECHO = 16;
 }
 
 // This message tells other peer's name
@@ -117,6 +119,11 @@ message DiscoveryNotification {
 	// reserved
 }
 
+message Echo{
+    optional string textValue = 1;
+    optional int32 integerValue = 2;
+}
+
 message MessageContainer{
 	
     required MessageType messageType = 1;
@@ -144,4 +151,6 @@ message MessageContainer{
     optional CreateFile createFile = 16;    
 
     optional MakeDirectory makeDirectory = 17;    
+
+    optional Echo echo = 18;
 }

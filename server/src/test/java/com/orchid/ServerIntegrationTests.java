@@ -92,9 +92,9 @@ public class ServerIntegrationTests {
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                     DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
                     int num = (int)atomicLong.incrementAndGet();
-                    builder.setIntroduce(Messages.Introduce.newBuilder().
-                            setName(String.valueOf(System.currentTimeMillis())+num)
-                            .setIncomingPort(num)
+                    builder.setEcho(Messages.Echo.newBuilder().
+                        //    setName(String.valueOf(System.currentTimeMillis())+num).
+                            setIntegerValue(num)
                     );
                     Messages.MessageContainer container = builder.build();
 
@@ -152,7 +152,7 @@ public class ServerIntegrationTests {
         ArrayList<Future<Void>> receivers = new ArrayList<Future<Void>>();
         ArrayList<Socket> sockets = new ArrayList<Socket>();
         
-        for (int i = 0; i < SENDERS; i++){
+        for (int i = 0; i < SENDERS*40; i++){
             Socket socket = new Socket("localhost", port);
             sockets.add(socket);
         }
