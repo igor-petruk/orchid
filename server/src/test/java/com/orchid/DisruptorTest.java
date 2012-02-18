@@ -12,16 +12,21 @@ import java.util.concurrent.Executors;
  * Date: 03.01.12
  * Time: 18:32
  */
- class Value{
-    int i;
-}
 
-public class DisruptorTest implements EventTranslator<Value>{
+public class DisruptorTest{
 
-    @Override
-    public Value translateTo(Value event, long sequence) {
-        event.i = val;
-        return event;
+    static class Value{
+        int i;
+    }
+
+    static class DisruptorEventTranslator implements EventTranslator<Value>{
+        int val;
+
+        @Override
+        public Value translateTo(Value event, long sequence) {
+            event.i = val;
+            return event;
+        }
     }
 
     EventHandler<Value> businessLogic = new EventHandler<Value>() {
@@ -38,9 +43,9 @@ public class DisruptorTest implements EventTranslator<Value>{
             return new Value();
         }
     };
-    
-    int val;
-    
+
+    DisruptorEventTranslator translator = new DisruptorEventTranslator();
+
     @Test
     public void testWrapping(){
         ExecutorService executor = Executors.newCachedThreadPool();
@@ -50,9 +55,9 @@ public class DisruptorTest implements EventTranslator<Value>{
         disruptor.handleEventsWith(businessLogic);
         RingBuffer<Value> ringBuffer = disruptor.start();
         for (int i = 0; i < 1000000; i++){
-            val = i;
+            translator.val = i;
             System.out.println("Publishing "+i);
-            disruptor.publishEvent(this);
+            disruptor.publishEvent(translator);
         }
     }
 }
