@@ -60,6 +60,12 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-grapher</artifactId>
+            <version>3.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

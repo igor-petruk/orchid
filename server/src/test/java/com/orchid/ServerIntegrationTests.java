@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
  */
 public class ServerIntegrationTests {
     final static int SENDERS = 50;
-    final static int MESSAGES = 100000;
+    final static int MESSAGES = 1000000;
     final static int BLOCK_SIZE = 1024;
     final static int WORKERS_COUNT = 4;
 

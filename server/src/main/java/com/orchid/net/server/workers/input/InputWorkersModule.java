@@ -17,7 +17,7 @@ import java.util.List;
 public class InputWorkersModule extends AbstractModule{
     @Override
     protected void configure() {
-        bind(Integer.class).annotatedWith(InputWorkersCount.class).toInstance(10);
+        bind(Integer.class).annotatedWith(InputWorkersCount.class).toInstance(4);
         bind(new TypeLiteral<List<InputWorker>>(){})
                 .toProvider(InputWorkerProvider.class).in(Singleton.class);
     }

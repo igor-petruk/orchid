@@ -17,7 +17,7 @@ import java.util.List;
 public class OutputWorkersModule extends AbstractModule{
     @Override
     protected void configure() {
-        bind(Integer.class).annotatedWith(OutputWorkersCount.class).toInstance(10);
+        bind(Integer.class).annotatedWith(OutputWorkersCount.class).toInstance(4);
         bind(new TypeLiteral<List<OutputWorker>>(){})
                 .toProvider(OutputWorkerProvider.class).in(Singleton.class);
         bind(OutputPublisher.class).in(Singleton.class);

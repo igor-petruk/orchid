@@ -20,22 +20,6 @@ import java.io.PrintWriter;
  * Time: 8:37
  */
 
-/*
-class Grapher {
-  public static void graph(String filename, Injector demoInjector) throws IOException {
-    PrintWriter out = new PrintWriter(new File(filename), "UTF-8");
-
-    Injector injector = Guice.createInjector(new GrapherModule(), new GraphvizModule());
-    GraphvizRenderer renderer = injector.getInstance(GraphvizRenderer.class);
-    renderer.setOut(out).setRankdir("TB");
-
-    injector.getInstance(InjectorGrapher.class)
-        .of(demoInjector)
-        .graph();
-  }
-}
-*/
-
 public class Runner {
     public static void main(String[] argv) {
         Injector injector = Guice.createInjector(
