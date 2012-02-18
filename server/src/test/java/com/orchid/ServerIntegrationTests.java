@@ -19,7 +19,7 @@ import com.orchid.net.server.main.NetworkServer;
 import com.orchid.net.server.workers.input.InputWorkersCount;
 import com.orchid.net.server.workers.output.OutputPublisher;
 import com.orchid.net.server.workers.output.OutputWorkersCount;
-import com.orchid.logic.ring.DisruptorModule;
+import com.orchid.logic.ring.InputRingModule;
 import com.orchid.logic.ring.RingElement;
 import com.orchid.net.streams.BufferSize;
 import org.junit.Rule;
@@ -201,7 +201,7 @@ public class ServerIntegrationTests {
             super.configure();
             install(new LoggingModule());
             install(Modules.override(new NetworkServerModule()).with(new NetworkServerExtension()));
-            install(new DisruptorModule());
+            install(new InputRingModule());
             install(Modules.override(new LogicModule()).with(new LogicExtension()));
         }
     }

@@ -7,7 +7,7 @@ import com.google.inject.util.Modules;
 import com.lmax.disruptor.EventTranslator;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.orchid.logic.LogicModule;
-import com.orchid.logic.ring.DisruptorModule;
+import com.orchid.logic.ring.InputRingModule;
 import com.orchid.logic.ring.RingElement;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class DisruptorIntegrationTests implements EventTranslator<RingElement>{
         @Override
         protected void configure() {
             super.configure();
-            install(Modules.override(new DisruptorModule()).with(new Extension()));
+            install(Modules.override(new InputRingModule()).with(new Extension()));
             install(new LogicModule());
         }
     }

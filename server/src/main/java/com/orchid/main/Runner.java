@@ -6,7 +6,7 @@ import com.orchid.logging.LoggingModule;
 import com.orchid.logic.LogicModule;
 import com.orchid.net.server.NetworkServerModule;
 import com.orchid.net.server.main.NetworkServer;
-import com.orchid.logic.ring.DisruptorModule;
+import com.orchid.logic.ring.InputRingModule;
 
 /**
  * User: Igor Petruk
@@ -19,7 +19,7 @@ public class Runner {
         Injector injector = Guice.createInjector(
                 new LoggingModule(),
                 new NetworkServerModule(),
-                new DisruptorModule(),
+                new InputRingModule(),
                 new LogicModule()
         );
         NetworkServer server = injector.getInstance(NetworkServer.class);

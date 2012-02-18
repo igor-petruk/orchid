@@ -15,25 +15,25 @@ import javax.inject.Singleton;
  * Date: 01.01.12
  * Time: 16:40
  */
-public class DisruptorModule extends AbstractModule{
+public class InputRingModule extends AbstractModule{
     @Override
     protected void configure() {
-        bind(DisruptorCore.class).in(Singleton.class);
-        bind(MessageHandler.class).to(DisruptorPublishingMethodHandler.class);
+        bind(InputRingConfiguration.class).in(Singleton.class);
+        bind(MessageHandler.class).to(InputRingPublisher.class);
     }
 
     @Provides
     @Singleton
     @Inject
-    public RingBuffer<RingElement> provideRingBuffer(DisruptorCore disruptorCore){
-        return disruptorCore.ringBuffer;
+    public RingBuffer<RingElement> provideRingBuffer(InputRingConfiguration inputRingConfiguration){
+        return inputRingConfiguration.getRingBuffer();
     }
 
     @Provides
     @Singleton
     @Inject
     @InputRing
-    public Disruptor<RingElement> provideDisruptor(DisruptorCore disruptorCore){
-        return disruptorCore.disruptor;
+    public Disruptor<RingElement> provideDisruptor(InputRingConfiguration inputRingConfiguration){
+        return inputRingConfiguration.getDisruptor();
     }
 }

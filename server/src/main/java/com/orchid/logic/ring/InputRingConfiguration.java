@@ -12,12 +12,12 @@ import java.util.concurrent.*;
  * Date: 01.01.12
  * Time: 16:47
  */
-public class DisruptorCore {
+public class InputRingConfiguration {
     Disruptor<RingElement> disruptor;
     RingBuffer<RingElement> ringBuffer;
     
     @Inject
-    public DisruptorCore(@BusinessLogic EventHandler<RingElement> businessLogic) {
+    public InputRingConfiguration(@BusinessLogic EventHandler<RingElement> businessLogic) {
         ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
             int threadID;
             

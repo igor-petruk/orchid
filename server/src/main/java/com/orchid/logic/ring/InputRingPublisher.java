@@ -17,13 +17,12 @@ import java.nio.channels.ReadableByteChannel;
  * Date: 01.01.12
  * Time: 19:12
  */
-public class DisruptorPublishingMethodHandler implements MessageHandler, EventTranslator<RingElement> {
+public class InputRingPublisher implements MessageHandler, EventTranslator<RingElement> {
     @Inject
     @InputRing
     Disruptor<RingElement> disruptor;
 
-    Messages.MessageContainer message;
-    UserID userID;
+    RingElement currentElement = RingElement.EVENT_FACTORY.newInstance();
 
     long msg = 0;
 
@@ -31,12 +30,10 @@ public class DisruptorPublishingMethodHandler implements MessageHandler, EventTr
     public void handleMessage(UserID userID, ReadableByteChannel byteChannel) {
         try{
             BufferAggregatorInputStream b = (BufferAggregatorInputStream)byteChannel;
-            this.userID = userID;
-            /*byteBuffer.rewind();
-            int i = b.read(byteBuffer);
-            byteBuffer.rewind();
-            byteBuffer.get(buf); */
-            message = Messages.MessageContainer.parseFrom(Channels.newInputStream(b));
+            Messages.MessageContainer message = Messages.MessageContainer.
+                    parseFrom(Channels.newInputStream(b));
+            currentElement.setUserID(userID);
+            currentElement.setMessage(message);
             disruptor.publishEvent(this);
         }catch(Exception e){
             e.printStackTrace();
@@ -45,10 +42,7 @@ public class DisruptorPublishingMethodHandler implements MessageHandler, EventTr
 
     @Override
     public RingElement translateTo(RingElement event, long sequence) {
-        event.message = message;
-        event.userID = userID;
-        message = null;
-        userID = null;
+        event.copyFrom(currentElement);
         return event;
     }
 }

@@ -12,12 +12,30 @@ import com.orchid.logic.user.UserID;
 public class RingElement {
     public Messages.MessageContainer message;
     public UserID userID;
-    public long number;
 
-    public final static EventFactory<RingElement> EVENT_FACTORY = new EventFactory<RingElement>()
-    {
-        public RingElement newInstance()
-        {
+    public void copyFrom(RingElement element){
+        setUserID(element.getUserID());
+        setMessage(element.getMessage());
+    }
+
+    public Messages.MessageContainer getMessage() {
+        return message;
+    }
+
+    public void setMessage(Messages.MessageContainer message) {
+        this.message = message;
+    }
+
+    public UserID getUserID() {
+        return userID;
+    }
+
+    public void setUserID(UserID userID) {
+        this.userID = userID;
+    }
+
+    public final static EventFactory<RingElement> EVENT_FACTORY = new EventFactory<RingElement>() {
+        public RingElement newInstance(){
             return new RingElement();
         }
     };

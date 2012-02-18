@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.orchid.logging.LoggingModule;
 import com.orchid.logic.LogicModule;
 import com.orchid.net.server.NetworkServerModule;
-import com.orchid.logic.ring.DisruptorModule;
+import com.orchid.logic.ring.InputRingModule;
 
 /**
  * User: Igor Petruk
@@ -16,7 +16,7 @@ public class ApplicationModule extends AbstractModule{
     protected void configure() {
         install(new LoggingModule());
         install(new NetworkServerModule());
-        install(new DisruptorModule());
+        install(new InputRingModule());
         install(new LogicModule());
     }
 }
