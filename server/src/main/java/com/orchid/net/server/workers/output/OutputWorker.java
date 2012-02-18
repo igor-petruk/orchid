@@ -5,10 +5,10 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.orchid.messages.generated.Messages;
 import com.orchid.net.server.connections.Connection;
 import com.orchid.net.server.workers.Worker;
-import com.orchid.ring.RingElement;
-import com.orchid.streams.BufferPool;
-import com.orchid.streams.ExpandingBuffer;
-import com.orchid.streams.SinkOutcome;
+import com.orchid.logic.ring.RingElement;
+import com.orchid.net.streams.BufferPool;
+import com.orchid.net.streams.ExpandingBuffer;
+import com.orchid.net.streams.SinkOutcome;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;

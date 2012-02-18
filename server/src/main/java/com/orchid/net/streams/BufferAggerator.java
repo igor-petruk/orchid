@@ -1,21 +1,12 @@
-package com.orchid.streams;
+package com.orchid.net.streams;
 
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import com.orchid.collections.ArrayBackedList;
-import com.orchid.user.UserID;
+import com.orchid.logic.user.UserID;
 
-import javax.print.attribute.IntegerSyntax;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ScatteringByteChannel;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * User: Igor Petruk

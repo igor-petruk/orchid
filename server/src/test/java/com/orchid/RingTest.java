@@ -2,11 +2,9 @@ package com.orchid;
 
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.lmax.disruptor.util.Util;
-import com.orchid.ring.RingElement;
+import com.orchid.logic.ring.RingElement;
 import org.junit.Test;
 
-import java.sql.SQLOutput;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 

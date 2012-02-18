@@ -7,8 +7,8 @@ import com.google.inject.util.Modules;
 import com.lmax.disruptor.EventTranslator;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.orchid.logic.LogicModule;
-import com.orchid.ring.DisruptorModule;
-import com.orchid.ring.RingElement;
+import com.orchid.logic.ring.DisruptorModule;
+import com.orchid.logic.ring.RingElement;
 import org.junit.Rule;
 import org.junit.Test;
 

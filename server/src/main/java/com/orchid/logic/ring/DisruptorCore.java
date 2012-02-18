@@ -1,14 +1,11 @@
-package com.orchid.ring;
+package com.orchid.logic.ring;
 
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.orchid.logic.annotations.BusinessLogic;
 
 import javax.inject.Inject;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.*;
-import java.util.logging.Logger;
 
 /**
  * User: Igor Petruk

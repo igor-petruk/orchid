@@ -1,20 +1,14 @@
-package com.orchid.ring;
+package com.orchid.logic.ring;
 
-import com.google.protobuf.CodedInputStream;
 import com.lmax.disruptor.EventTranslator;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.orchid.messages.generated.Messages;
-import com.orchid.ring.anotations.InputRing;
-import com.orchid.streams.BufferAggregatorInputStream;
-import com.orchid.streams.MessageHandler;
-import com.orchid.user.UserID;
+import com.orchid.logic.ring.anotations.InputRing;
+import com.orchid.net.streams.BufferAggregatorInputStream;
+import com.orchid.net.streams.MessageHandler;
+import com.orchid.logic.user.UserID;
 
 import javax.inject.Inject;
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.FilterInputStream;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 

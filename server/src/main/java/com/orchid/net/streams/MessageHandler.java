@@ -1,6 +1,6 @@
-package com.orchid.streams;
+package com.orchid.net.streams;
 
-import com.orchid.user.UserID;
+import com.orchid.logic.user.UserID;
 
 import java.nio.channels.ReadableByteChannel;
 

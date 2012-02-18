@@ -1,4 +1,4 @@
-package com.orchid.ring.anotations;
+package com.orchid.logic.ring.anotations;
 
 import com.google.inject.BindingAnnotation;
 

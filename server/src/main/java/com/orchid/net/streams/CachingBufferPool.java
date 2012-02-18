@@ -1,15 +1,9 @@
-package com.orchid.streams;
-
-import com.orchid.collections.CollectionElementProvider;
+package com.orchid.net.streams;
 
 import javax.inject.Inject;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.security.DigestInputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**

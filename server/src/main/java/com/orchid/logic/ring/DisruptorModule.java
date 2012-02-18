@@ -1,13 +1,11 @@
-package com.orchid.ring;
+package com.orchid.logic.ring;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Exposed;
-import com.google.inject.PrivateModule;
 import com.google.inject.Provides;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.orchid.ring.anotations.InputRing;
-import com.orchid.streams.MessageHandler;
+import com.orchid.logic.ring.anotations.InputRing;
+import com.orchid.net.streams.MessageHandler;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

@@ -4,23 +4,12 @@ import com.google.guiceberry.GuiceBerryModule;
 import com.google.guiceberry.junit4.GuiceBerryRule;
 import com.google.inject.AbstractModule;
 import com.google.inject.util.Modules;
-import com.google.protobuf.CodedOutputStream;
-import com.orchid.messages.generated.Messages;
-import com.orchid.net.server.NetworkServerModule;
-import com.orchid.net.server.annotations.ServerPort;
-import com.orchid.net.server.main.NetworkServer;
-import com.orchid.streams.*;
-import com.orchid.user.UserID;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import javax.inject.Inject;
 import java.io.*;
-import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.util.Scanner;
 
 /**
  * User: Igor Petruk

@@ -2,7 +2,6 @@ package com.orchid;
 
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.orchid.ring.RingElement;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutorService;

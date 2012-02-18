@@ -1,4 +1,4 @@
-package com.orchid.streams;
+package com.orchid.net.streams;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

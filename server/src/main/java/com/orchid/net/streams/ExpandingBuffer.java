@@ -1,6 +1,5 @@
-package com.orchid.streams;
+package com.orchid.net.streams;
 
-import com.google.protobuf.CodedOutputStream;
 import com.orchid.collections.ArrayBackedList;
 import com.orchid.messages.generated.Messages;
 

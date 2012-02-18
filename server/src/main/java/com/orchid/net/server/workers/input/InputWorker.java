@@ -3,20 +3,18 @@ package com.orchid.net.server.workers.input;
 import com.orchid.net.server.connections.Connection;
 import com.orchid.net.server.exceptions.NetworkException;
 import com.orchid.net.server.workers.Worker;
-import com.orchid.streams.BufferAggerator;
-import com.orchid.streams.BufferPool;
-import com.orchid.streams.MessageHandler;
+import com.orchid.net.streams.BufferAggerator;
+import com.orchid.net.streams.BufferPool;
+import com.orchid.net.streams.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * User: Igor Petruk

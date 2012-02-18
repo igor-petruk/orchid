@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.orchid.logging.LoggingModule;
 import com.orchid.logic.LogicModule;
 import com.orchid.net.server.NetworkServerModule;
-import com.orchid.ring.DisruptorModule;
+import com.orchid.logic.ring.DisruptorModule;
 
 /**
  * User: Igor Petruk

@@ -1,4 +1,4 @@
-package com.orchid.streams;
+package com.orchid.net.streams;
 
 /**
  * User: Igor Petruk

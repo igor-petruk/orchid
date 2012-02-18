@@ -1,11 +1,10 @@
 package com.orchid.logic;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.lmax.disruptor.EventHandler;
 import com.orchid.logic.annotations.BusinessLogic;
-import com.orchid.ring.RingElement;
+import com.orchid.logic.ring.RingElement;
 
 import javax.inject.Singleton;
 

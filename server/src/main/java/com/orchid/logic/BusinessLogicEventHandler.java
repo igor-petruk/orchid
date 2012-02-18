@@ -1,16 +1,11 @@
 package com.orchid.logic;
 
-import com.google.common.collect.ConcurrentHashMultiset;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
 import com.lmax.disruptor.EventHandler;
 import com.orchid.messages.generated.Messages;
 import com.orchid.net.server.workers.output.OutputPublisher;
-import com.orchid.ring.RingElement;
+import com.orchid.logic.ring.RingElement;
 
 import javax.inject.Inject;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * User: Igor Petruk
