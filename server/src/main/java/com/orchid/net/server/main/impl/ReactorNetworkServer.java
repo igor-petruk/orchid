@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import com.orchid.net.server.accepter.ConnectionAccepter;
 import com.orchid.net.server.main.NetworkServer;
 import com.orchid.net.server.workers.input.InputWorker;
+import com.orchid.net.server.workers.output.OutputWorker;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -16,14 +17,18 @@ import java.util.List;
 public class ReactorNetworkServer implements NetworkServer {
     ConnectionAccepter accepter;
     List<InputWorker> inputWorkers;
+    List<OutputWorker> outputWorkers;
 
     @Inject
     Logger logger;
     
     @Inject
-    public ReactorNetworkServer(ConnectionAccepter accepter, List<InputWorker> inputWorkers) {
+    public ReactorNetworkServer(ConnectionAccepter accepter,
+                                List<InputWorker> inputWorkers,
+                                List<OutputWorker> outputWorkers) {
         this.accepter = accepter;
         this.inputWorkers = inputWorkers;
+        this.outputWorkers = outputWorkers;
     }
 
     @Override
@@ -31,6 +36,9 @@ public class ReactorNetworkServer implements NetworkServer {
         logger.info("Starting Orchid Tracker with "+inputWorkers.size()+" workers");
         for (InputWorker inputWorker : inputWorkers){
             inputWorker.start();
+        }
+        for (OutputWorker outputWorker : outputWorkers){
+            outputWorker.start();
         }
         accepter.start();
     }

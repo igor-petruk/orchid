@@ -33,6 +33,8 @@ public abstract class Worker{
         }
     }
 
+    public abstract void start();
+
     public int getConnectionsCount() {
         return connectionsCount.get();
     }

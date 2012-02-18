@@ -41,12 +41,7 @@ public class OutputWorker extends Worker implements EventProcessor {
     @Inject
     private Logger logger;
 
-    public OutputWorker() {
-        try{
-            selector = Selector.open();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+    public void start(){
         ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
             int threadID;
 
@@ -68,6 +63,9 @@ public class OutputWorker extends Worker implements EventProcessor {
         sequenceBarrier = ringBuffer.newBarrier();
         disruptor.after(this).handleEventsWith(new DummyEventHandler());
         disruptor.start();
+    }
+
+    public OutputWorker() {
     }
 
     public Disruptor<RingElement> getDisruptor() {
