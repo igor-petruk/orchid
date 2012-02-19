@@ -10,10 +10,8 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.orchid</groupId>
     <artifactId>orchid-server</artifactId>
     <name>Orchid Server</name>
-    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
 
