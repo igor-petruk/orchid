@@ -35,6 +35,8 @@ public class InputWorker extends Worker implements Runnable{
 
     public void start(){
         thread = new Thread(this);
+        String name = "IW thread";
+        thread.setName(name);
         thread.start();
     }
 

@@ -10,6 +10,7 @@ import com.orchid.net.streams.BufferPool;
 import com.orchid.net.streams.ExpandingBuffer;
 import com.orchid.net.streams.SinkOutcome;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -32,7 +33,6 @@ public class OutputWorker extends Worker implements EventProcessor {
 
     Disruptor<RingElement> disruptor;
     RingBuffer<RingElement> ringBuffer;
-    Selector selector;
     Sequence sequence = new Sequence(Sequencer.INITIAL_CURSOR_VALUE);
     SequenceBarrier sequenceBarrier;
     long nextSequence;
@@ -48,8 +48,7 @@ public class OutputWorker extends Worker implements EventProcessor {
             @Override
             public Thread newThread(Runnable runnable) {
                 Thread thread = new Thread(runnable);
-                String name = "OutputWorker ring thread -" + this;
-                System.out.println("Starting " + name);
+                String name = "OW thread";
                 thread.setName(name);
                 return thread;
             }
@@ -104,6 +103,8 @@ public class OutputWorker extends Worker implements EventProcessor {
 
     @Override
     public void run() {
+        MDC.put("subsystem", workerName);
+        logger.info("OutputWorker started");
         sequenceBarrier.clearAlert();
         nextSequence = sequence.get() + 1L;
 
