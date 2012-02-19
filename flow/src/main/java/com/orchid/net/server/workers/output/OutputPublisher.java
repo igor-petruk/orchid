@@ -1,8 +1,8 @@
 package com.orchid.net.server.workers.output;
 
 import com.lmax.disruptor.EventTranslator;
-import com.orchid.logic.ring.RingElement;
-import com.orchid.logic.user.UserID;
+import com.orchid.ring.RingElement;
+import com.orchid.user.UserID;
 
 /**
  * User: Igor Petruk

@@ -1,8 +1,8 @@
-package com.orchid.logic.ring;
+package com.orchid.ring;
 
 import com.lmax.disruptor.EventFactory;
 import com.orchid.messages.generated.Messages;
-import com.orchid.logic.user.UserID;
+import com.orchid.user.UserID;
 
 /**
  * User: Igor Petruk

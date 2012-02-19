@@ -3,7 +3,7 @@ package com.orchid.logic;
 import com.lmax.disruptor.EventHandler;
 import com.orchid.messages.generated.Messages;
 import com.orchid.net.server.workers.output.OutputPublisher;
-import com.orchid.logic.ring.RingElement;
+import com.orchid.ring.RingElement;
 
 import javax.inject.Inject;
 

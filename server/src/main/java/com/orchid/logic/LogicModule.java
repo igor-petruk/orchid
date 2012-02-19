@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.lmax.disruptor.EventHandler;
 import com.orchid.logic.annotations.BusinessLogic;
-import com.orchid.logic.ring.RingElement;
+import com.orchid.ring.RingElement;
 
 import javax.inject.Singleton;
 

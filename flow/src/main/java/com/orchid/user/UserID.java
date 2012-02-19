@@ -1,4 +1,4 @@
-package com.orchid.logic.user;
+package com.orchid.user;
 
 import com.orchid.net.server.connections.Connection;
 import com.orchid.net.server.workers.input.InputWorker;

@@ -1,7 +1,7 @@
 package com.orchid.net.streams;
 
 import com.orchid.collections.ArrayBackedList;
-import com.orchid.logic.user.UserID;
+import com.orchid.user.UserID;
 
 import java.io.Closeable;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.orchid.logic.ring;
+package com.orchid.ring;
 
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.Disruptor;

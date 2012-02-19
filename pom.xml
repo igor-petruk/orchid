@@ -14,6 +14,7 @@
         <module>messages</module>
         <module>server</module>
         <module>utils</module>
+        <module>flow</module>
     </modules>
 
     <properties>
@@ -75,6 +76,12 @@
             <dependency>
                 <groupId>com.orchid</groupId>
                 <artifactId>orchid-utils</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.orchid</groupId>
+                <artifactId>orchid-flow</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
 

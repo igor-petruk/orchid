@@ -10,10 +10,9 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>orchid-server</artifactId>
-    <name>Orchid Server</name>
+    <artifactId>orchid-flow</artifactId>
+    <name>Orchid Flow Messaging</name>
     <packaging>jar</packaging>
-
 
     <dependencies>
         <dependency>
@@ -45,17 +44,12 @@
 
         <dependency>
             <groupId>com.orchid</groupId>
-            <artifactId>orchid-messages</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.orchid</groupId>
             <artifactId>orchid-utils</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.orchid</groupId>
-            <artifactId>orchid-flow</artifactId>
+            <artifactId>orchid-messages</artifactId>
         </dependency>
 
         <dependency>

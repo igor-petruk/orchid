@@ -9,7 +9,7 @@ import com.orchid.net.server.workers.input.InputWorker;
 import com.orchid.net.server.workers.input.InputWorkerSelector;
 import com.orchid.net.server.workers.output.OutputWorker;
 import com.orchid.net.server.workers.output.OutputWorkerSelector;
-import com.orchid.logic.user.UserID;
+import com.orchid.user.UserID;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
