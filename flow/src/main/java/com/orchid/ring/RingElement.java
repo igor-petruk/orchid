@@ -10,7 +10,7 @@ import com.orchid.user.UserID;
  * Time: 16:48
  */
 public class RingElement {
-    public Messages.MessageContainer message;
+    public Object message;
     public UserID userID;
 
     public void copyFrom(RingElement element){
@@ -18,11 +18,11 @@ public class RingElement {
         setMessage(element.getMessage());
     }
 
-    public Messages.MessageContainer getMessage() {
+    public Object getMessage() {
         return message;
     }
 
-    public void setMessage(Messages.MessageContainer message) {
+    public void setMessage(Object message) {
         this.message = message;
     }
 

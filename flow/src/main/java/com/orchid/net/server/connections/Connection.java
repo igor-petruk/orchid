@@ -20,7 +20,7 @@ public class Connection {
     BufferAggerator bufferAggerator;
     ExpandingBuffer expandingBuffer;
     UserID userID;
-    Queue<Messages.MessageContainer> outputQueue;
+    Queue<Object> outputQueue;
     SelectionKey outputKey;
     boolean currentlySending;
 
@@ -42,7 +42,7 @@ public class Connection {
 
     public Connection(SocketChannel socketChannel) {
         this.socketChannel = socketChannel;
-        outputQueue = new LinkedList<Messages.MessageContainer>();
+        outputQueue = new LinkedList<Object>();
     }
 
     public void setUserID(UserID userID) {
@@ -65,7 +65,7 @@ public class Connection {
         return userID;
     }
 
-    public Queue<Messages.MessageContainer> getOutputQueue() {
+    public Queue<Object> getOutputQueue() {
         return outputQueue;
     }
 

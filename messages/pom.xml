@@ -20,6 +20,11 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.orchid</groupId>
+            <artifactId>orchid-utils</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

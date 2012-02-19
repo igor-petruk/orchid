@@ -4,6 +4,9 @@ import com.google.guiceberry.GuiceBerryModule;
 import com.google.guiceberry.junit4.GuiceBerryRule;
 import com.google.inject.AbstractModule;
 import com.google.inject.util.Modules;
+import com.orchid.messages.generated.Messages;
+import com.orchid.net.streams.*;
+import com.orchid.user.UserID;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -25,7 +28,7 @@ public class BufferIntegrationTests {
 
     File tmp;
 
-    class StringMessageHandler implements MessageHandler{
+    class StringMessageHandler implements MessageHandler {
         @Override
         public void handleMessage(UserID userID, ReadableByteChannel byteChannel) {
            // Scanner scanner = new Scanner(Channels.newInputStream(byteChannel));

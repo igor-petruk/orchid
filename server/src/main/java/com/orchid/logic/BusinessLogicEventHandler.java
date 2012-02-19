@@ -18,7 +18,8 @@ public class BusinessLogicEventHandler implements EventHandler<RingElement>{
 
     @Override
     public void onEvent(RingElement event, long sequence, boolean endOfBatch) throws Exception {
-        if (event.message.getMessageType().equals(Messages.MessageType.ECHO)){
+        Messages.MessageContainer container = (Messages.MessageContainer)event.getMessage();
+        if (container.getMessageType().equals(Messages.MessageType.ECHO)){
             publisher.send(event,event.userID);
         }
     }

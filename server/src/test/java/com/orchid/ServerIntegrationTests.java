@@ -228,7 +228,8 @@ public class ServerIntegrationTests {
 
             assertNotNull(event.message);
             assertNotNull(event.userID);
-            items.add(event.message.getIntroduce().getName());
+            Messages.MessageContainer container = (Messages.MessageContainer)event.getMessage();
+            items.add(container.getIntroduce().getName());
             if (items.size()==messagesCount){
                 try{
                     lock.lock();

@@ -174,7 +174,7 @@ public class OutputWorker extends Worker implements EventProcessor {
             if (connection.getOutputQueue().isEmpty()){
                 logger.error("Unexpected write. It is a bug.");
             }else{
-                Messages.MessageContainer container = connection.getOutputQueue().poll();
+                Object container = connection.getOutputQueue().poll();
                 expandingBuffer.spill(container);
             }
         }
