@@ -2,13 +2,13 @@ package com.orchid.net.server.workers.output;
 
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.orchid.messages.generated.Messages;
 import com.orchid.net.server.connections.Connection;
 import com.orchid.net.server.workers.Worker;
 import com.orchid.ring.RingElement;
 import com.orchid.net.streams.BufferPool;
 import com.orchid.net.streams.ExpandingBuffer;
 import com.orchid.net.streams.SinkOutcome;
+import com.orchid.serialization.FlowMessageSerializer;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -39,6 +39,9 @@ public class OutputWorker extends Worker implements EventProcessor {
 
     @Inject
     private Logger logger;
+
+    @Inject
+    FlowMessageSerializer serializer;
 
     public void start(){
         ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
@@ -73,7 +76,7 @@ public class OutputWorker extends Worker implements EventProcessor {
     @Override
     public void handleConnection(Connection connection) {
         try{
-            ExpandingBuffer expandingBuffer = new ExpandingBuffer(bufferPool);
+            ExpandingBuffer expandingBuffer = new ExpandingBuffer(bufferPool, serializer);
             connection.setExpandingBuffer(expandingBuffer);
 
             synchronized (this){

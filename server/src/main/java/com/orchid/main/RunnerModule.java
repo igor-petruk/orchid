@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.orchid.flow.FlowModule;
 import com.orchid.logging.LoggingModule;
 import com.orchid.logic.LogicModule;
+import com.orchid.serialization.ProtobufMessageSerializationModule;
 
 /**
  * User: Igor Petruk
@@ -15,6 +16,7 @@ public class RunnerModule extends AbstractModule{
     protected void configure() {
         install(new LoggingModule());
         install(new FlowModule());
+        install(new ProtobufMessageSerializationModule());
         install(new LogicModule());
     }
 }

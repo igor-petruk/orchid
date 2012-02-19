@@ -2,8 +2,8 @@ package com.orchid.net.streams;
 
 import com.orchid.collections.ArrayBackedList;
 import com.orchid.serialization.FlowMessageSerializer;
-import com.orchid.serialization.ProtobufMessageSerializer;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
@@ -21,7 +21,7 @@ public class ExpandingBuffer {
     ExpandingBufferOutputStream outputStream;
     boolean messageActive;
     
-    FlowMessageSerializer serializer = new ProtobufMessageSerializer();
+    FlowMessageSerializer serializer;
     
     int count = 0;
 
@@ -33,7 +33,8 @@ public class ExpandingBuffer {
         this.messageActive = messageActive;
     }
 
-    public ExpandingBuffer(BufferPool bufferPool) {
+    public ExpandingBuffer(BufferPool bufferPool, FlowMessageSerializer serializer) {
+        this.serializer = serializer;
         this.bufferPool = bufferPool;
         this.bufferSize = bufferPool.getBufferSize();
         usedBuffers = new ArrayBackedList<DirectBuffer>(
@@ -48,7 +49,11 @@ public class ExpandingBuffer {
             int size = serializer.getMessageSize(message);
             outputStream.reset();
             OutputStream output = Channels.newOutputStream(outputStream);
-            serializer.writeSize(message, output);
+
+            DataOutputStream dataOutputStream = new DataOutputStream(output);
+            dataOutputStream.writeInt(serializer.getMessageSize(message));
+            dataOutputStream.flush();
+
             serializer.writeMessage(message, output);
             output.flush();
             outputStream.startSending();

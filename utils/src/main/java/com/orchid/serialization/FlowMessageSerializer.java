@@ -1,6 +1,7 @@
 package com.orchid.serialization;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -10,7 +11,6 @@ import java.io.OutputStream;
  */
 public interface FlowMessageSerializer<T> {
     public int getMessageSize(T message);
-
-    public void writeSize(T message, OutputStream outputStream) throws IOException;
     public void writeMessage(T message, OutputStream outputStream) throws IOException;
+    public T readMessage(InputStream inputStream) throws IOException;
 }

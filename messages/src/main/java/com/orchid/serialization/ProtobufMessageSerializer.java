@@ -5,6 +5,7 @@ import com.orchid.serialization.FlowMessageSerializer;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -20,14 +21,12 @@ public class ProtobufMessageSerializer implements FlowMessageSerializer<Messages
     }
 
     @Override
-    public void writeSize(Messages.MessageContainer message, OutputStream outputStream) throws IOException {
-        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-        dataOutputStream.writeInt(getMessageSize(message));
-        dataOutputStream.flush();
+    public void writeMessage(Messages.MessageContainer message, OutputStream outputStream) throws IOException {
+        message.writeTo(outputStream);
     }
 
     @Override
-    public void writeMessage(Messages.MessageContainer message, OutputStream outputStream) throws IOException {
-        message.writeTo(outputStream);
+    public Messages.MessageContainer readMessage(InputStream inputStream) throws IOException {
+        return Messages.MessageContainer.parseFrom(inputStream);
     }
 }
