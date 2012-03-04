@@ -16,6 +16,7 @@ public class  ArrayBackedList<T> extends AbstractList<T> {
     CollectionElementProvider<T> elementProvider;
     Class<T> klass;
 
+    @SuppressWarnings("unchecked")
     public ArrayBackedList(Class<T> klass,
                            CollectionElementProvider<T> elementProvider,
                            int capacity) {
@@ -34,7 +35,7 @@ public class  ArrayBackedList<T> extends AbstractList<T> {
     }
 
     public T extend() {
-        T[] newArray = (T[])Arrays.copyOf(array, size+1);
+        T[] newArray = Arrays.copyOf(array, size+1);
         T o = newArray[size] = elementProvider.allocate();
         size++;
         array = newArray;

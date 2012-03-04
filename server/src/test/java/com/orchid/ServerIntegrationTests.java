@@ -22,6 +22,7 @@ import com.orchid.net.server.workers.output.OutputWorkersCount;
 import com.orchid.ring.InputRingModule;
 import com.orchid.ring.RingElement;
 import com.orchid.net.streams.BufferSize;
+import com.orchid.serialization.ProtobufMessageSerializationModule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -199,6 +200,7 @@ public class ServerIntegrationTests {
         @Override
         protected void configure() {
             super.configure();
+            install(new ProtobufMessageSerializationModule());
             install(new LoggingModule());
             install(Modules.override(new NetworkServerModule()).with(new NetworkServerExtension()));
             install(new InputRingModule());

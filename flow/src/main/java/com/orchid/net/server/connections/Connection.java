@@ -1,6 +1,5 @@
 package com.orchid.net.server.connections;
 
-import com.orchid.messages.generated.Messages;
 import com.orchid.net.streams.BufferAggerator;
 import com.orchid.net.streams.ExpandingBuffer;
 import com.orchid.user.UserID;

@@ -1,7 +1,6 @@
 package com.orchid.ring;
 
 import com.lmax.disruptor.EventFactory;
-import com.orchid.messages.generated.Messages;
 import com.orchid.user.UserID;
 
 /**
