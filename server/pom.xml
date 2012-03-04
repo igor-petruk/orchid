@@ -118,7 +118,7 @@
                         <manifest>
                             <classpathPrefix>lib/</classpathPrefix>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.orchid.main.Runner</mainClass>
+                            <mainClass>com.orchid.main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
