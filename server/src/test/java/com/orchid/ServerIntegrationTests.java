@@ -154,7 +154,7 @@ public class ServerIntegrationTests {
         ArrayList<Socket> sockets = new ArrayList<Socket>();
         
         for (int i = 0; i < SENDERS; i++){
-            Socket socket = new Socket("localhost", port);
+            Socket socket = new Socket("localhost", 9800);
             sockets.add(socket);
         }
         Thread.sleep(1000);
