@@ -31,6 +31,7 @@ public class InputRingConfiguration {
             }
         });
         disruptor = new Disruptor<RingElement>(RingElement.EVENT_FACTORY, executor,
+           //                new MultiThreadedLowContentionClaimStrategy(1024),
                             new MultiThreadedClaimStrategy(1024),
                             new BlockingWaitStrategy());
         disruptor.handleEventsWith(businessLogic);

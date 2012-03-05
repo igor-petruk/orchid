@@ -62,7 +62,7 @@ public class OutputWorker extends Worker implements EventProcessor {
 
         ringBuffer = disruptor.getRingBuffer();
         sequenceBarrier = ringBuffer.newBarrier();
-        disruptor.after(this).handleEventsWith(new DummyEventHandler());
+        disruptor.handleEventsWith(this);
         disruptor.start();
     }
 
