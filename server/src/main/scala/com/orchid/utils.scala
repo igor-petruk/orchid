@@ -6,7 +6,7 @@ object EnumMap {
   }
 }
 
-class EnumMap[K <: Enum[_], T] private (values: Array[T])
+class EnumMap[K <: Enum[_], +T] private (values: Array[T])
                                        (implicit m: Manifest[K])
   extends Map[K, T] {
 

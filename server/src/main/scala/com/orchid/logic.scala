@@ -11,6 +11,7 @@ import com.orchid.logic.annotations.BusinessLogic
 import scala.collection.JavaConversions._
 import com.orchid.{HandlersModule, MessageHandler}
 import com.orchid.utils._
+import com.orchid.messages.generated.Messages.{MessageType, MessageContainer}
 
 /**
  * User: Igor Petruk
@@ -21,8 +22,7 @@ class BusinessLogicEventHandler @Inject()
   (handlersObjects: java.util.Set[MessageHandler])
   extends EventHandler[RingElement] {
 
-  val handlers = handlersObjects.foldLeft(
-      EnumMap[Messages.MessageType, MessageHandler])
+  val handlers = handlersObjects.foldLeft(EnumMap[MessageType, MessageHandler])
       {(map, handler) =>{
         val handlerMap = handler.handles.map(x=>(x, handler))
         map ++ handlerMap
@@ -30,7 +30,7 @@ class BusinessLogicEventHandler @Inject()
   }
   
   def onEvent(event: RingElement, sequence: Long, endOfBatch: Boolean) {
-    val container = event.getMessage.asInstanceOf[Messages.MessageContainer]
+    val container = event.getMessage.asInstanceOf[MessageContainer]
     handlers.get(container.getMessageType) match {
       case Some(handler) => handler.handle(event)
       case _ =>

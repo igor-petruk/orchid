@@ -1,8 +1,8 @@
 package com.orchid
 
 import messages.generated.Messages
-import messages.generated.Messages.MessageContainer
 import messages.generated.Messages.MessageType._
+import messages.generated.Messages.{MessageContainer, MessageType}
 import net.server.workers.output.OutputPublisher
 import ring.RingElement
 import javax.inject.Inject
@@ -19,12 +19,12 @@ trait MessageHandler{
   @Inject
   var publisher: OutputPublisher = null
 
-  def handles:List[Messages.MessageType]
+  def handles:List[MessageType]
 
   def handle(event: RingElement)
 
   def extractMessage(event:RingElement)=
-    event.getMessage.asInstanceOf[Messages.MessageContainer]
+    event.getMessage.asInstanceOf[MessageContainer]
 }
 
 class HandlersModule extends AbstractModule{
