@@ -1,5 +1,7 @@
 package com.orchid.utils
 
+import annotation.tailrec
+
 object EnumMap {
   def apply[K <: Enum[_], T](implicit k: Manifest[K], t: Manifest[T]) = {
     new EnumMap[K, T]()(k, t).asInstanceOf[Map[K, T]]
@@ -25,12 +27,13 @@ class EnumMap[K <: Enum[_], +T] private (values: Array[T])
 
     def hasNext = index < notNulls - 1
 
+    @tailrec
+    private def nextNonNullIndex(index:Int):Int=
+      if (values(index)!=null) index
+      else nextNonNullIndex(index+1)
+
     def next() = {
-      var value = null.asInstanceOf[T];
-      do {
-        index += 1
-        value = values(index)
-      } while (value != null)
+      val value = values(nextNonNullIndex(index+1));
       val key = m.erasure.getEnumConstants()(index).asInstanceOf[K]
       (key, value)
     }
