@@ -9,8 +9,8 @@ import javax.inject.Singleton
 import com.lmax.disruptor.EventHandler
 import com.orchid.logic.annotations.BusinessLogic
 import scala.collection.JavaConversions._
-import java.util.EnumMap
 import com.orchid.{HandlersModule, MessageHandler}
+import com.orchid.utils._
 
 /**
  * User: Igor Petruk
@@ -22,22 +22,23 @@ class BusinessLogicEventHandler @Inject()
   extends EventHandler[RingElement] {
 
   val handlers = handlersObjects.foldLeft(
-    new EnumMap[Messages.MessageType, MessageHandler](classOf[Messages.MessageType]))
+      EnumMap[Messages.MessageType, MessageHandler])
       {(map, handler) =>{
-        for (messageType <- handler.handles){
-          map.put(messageType, handler);
-        }
-        map
+        val handlerMap = handler.handles.map(x=>(x, handler))
+        map ++ handlerMap
     }
   }
   
   def onEvent(event: RingElement, sequence: Long, endOfBatch: Boolean) {
     val container = event.getMessage.asInstanceOf[Messages.MessageContainer]
-    handlers.get(container.getMessageType).handle(event)
+    handlers.get(container.getMessageType) match {
+      case Some(handler) => handler.handle(event)
+      case _ =>
+    }
   }
 
   @Inject
-  var publisher: OutputPublisher = null
+  var publisher: OutputPublisher = _
 }
 
 class LogicModule extends AbstractModule {

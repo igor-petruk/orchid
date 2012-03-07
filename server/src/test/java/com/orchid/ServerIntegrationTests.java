@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
  * Time: 21:42
  */
 public class ServerIntegrationTests {
-    final static int SENDERS = 50;
+    final static int SENDERS = 40;
     final static int MESSAGES = 1000000;
     final static int BLOCK_SIZE = 1024;
     final static int WORKERS_COUNT = 4;
@@ -170,8 +170,6 @@ public class ServerIntegrationTests {
             receivers.get(i).get();
         }
         System.out.println("All done");
-        //MultisetValidatingHandler multisetValidatingHandler = (MultisetValidatingHandler)handler;
-        //multisetValidatingHandler.validate();
         tick = System.currentTimeMillis()-tick;
         logger.info("Test completed. Speed=" + (int) ((double) MESSAGES / tick * 1000) + " m/sec");
     }
@@ -185,17 +183,6 @@ public class ServerIntegrationTests {
         }
    }
 
-    public static final class LogicExtension extends AbstractModule {
-        @Override
-        protected void configure() {
-            bind(Integer.class).annotatedWith(Names.named("messagesCount")).toInstance(MESSAGES);
-            bind(new TypeLiteral<EventHandler<RingElement>>() {}).
-                    annotatedWith(BusinessLogic.class).
-                    to(MultisetValidatingHandler.class).
-                    in(Singleton.class);
-        }
-    }
-
     public static final class Env extends GuiceBerryModule {
         @Override
         protected void configure() {
@@ -204,59 +191,10 @@ public class ServerIntegrationTests {
             install(new LoggingModule());
             install(Modules.override(new NetworkServerModule()).with(new NetworkServerExtension()));
             install(new InputRingModule());
-            install(Modules.override(new LogicModule()).with(new LogicExtension()));
+            install(new LogicModule());
         }
     }
 
-    static class MultisetValidatingHandler implements EventHandler<RingElement>{
-        Multiset<String> items = HashMultiset.create();
-
-        @Inject
-        Logger logger;
-
-        @Inject
-        @Named("messagesCount")
-        int messagesCount;
-
-        @Inject
-        OutputPublisher publisher;
-
-        final Lock lock = new ReentrantLock();
-        Condition done = lock.newCondition();
-
-        @Override
-        public void onEvent(RingElement event, long sequence, boolean endOfBatch) throws Exception {
-            publisher.send(event, event.userID);
-
-            assertNotNull(event.message);
-            assertNotNull(event.userID);
-            Messages.MessageContainer container = (Messages.MessageContainer)event.getMessage();
-            items.add(container.getIntroduce().getName());
-            if (items.size()==messagesCount){
-                try{
-                    lock.lock();
-                    done.signal();
-                }finally{
-                    lock.unlock();
-                }
-            }
-        }
-
-        public Multiset<String> getItems() {
-            return items;
-        }
-
-        public void validate() throws InterruptedException {
-            lock.lock();
-            done.await();
-            lock.unlock();
-            logger.info("Received unique {} messages", items.size());
-            assertEquals(messagesCount, items.size());
-            for (Multiset.Entry<String> entry: items.entrySet()){
-                assertEquals(1,entry.getCount());
-            }
-        }
-    }
 
 }
 

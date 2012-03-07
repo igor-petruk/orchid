@@ -57,7 +57,7 @@ public class OutputWorker extends Worker implements EventProcessor {
         });
 
         disruptor = new Disruptor<RingElement>(RingElement.EVENT_FACTORY, executor,
-                new SingleThreadedClaimStrategy(256),
+                new SingleThreadedClaimStrategy(1024),
                 new BlockingWaitStrategy());
 
         ringBuffer = disruptor.getRingBuffer();
