@@ -3,7 +3,9 @@ package com.orchid.tree
 import com.google.inject.{Singleton, AbstractModule}
 import java.util.UUID
 import collection.immutable
+import collection._
 import annotation.tailrec
+import mutable.Ctrie
 
 /**
  * User: Igor Petruk
@@ -30,6 +32,8 @@ trait FilesystemTree {
 class FilesystemTreeImpl extends FilesystemTree{
   var rootNode:Node = Node(new UUID(0,0),"ROOT",true, 0,
     immutable.HashMap[String, Node]())
+
+  val nodesById:mutable.Map[UUID, Node]= Ctrie.empty
 
   def root = rootNode
 
@@ -67,6 +71,7 @@ class FilesystemTreeImpl extends FilesystemTree{
     else parent.split('/').toList
 
     for (newRoot <- setFileAsChild(root, pathList)){
+      nodesById+=(child.id->child)
       rootNode = newRoot
     }
   }
