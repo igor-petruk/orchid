@@ -51,6 +51,7 @@ class HandlersModule extends AbstractModule{
     handlerBinder.addBinding().to(classOf[MakeDirectoryHandler])
     handlerBinder.addBinding().to(classOf[CreateFileHandler])
     handlerBinder.addBinding().to(classOf[FileInfoRequestHandler])
+    handlerBinder.addBinding().to(classOf[DiscoverFileHandler])
   }
 }
 
@@ -133,6 +134,22 @@ class FileInfoRequestHandler extends MessageHandler{
       }
 
       publisher.send(response.build(), event.getUserID)
+    }
+  }
+}
+
+class DiscoverFileHandler extends MessageHandler{
+  def handles = List(DISCOVER_FILE)
+
+  import com.orchid.utils.FileUtils._
+  import scala.collection.JavaConversions._
+  
+  def handle(event: RingElement){
+    val message = extractMessage(event)
+    val discoverFile = message.getDiscoverFile
+    
+    for(file<-discoverFile.getFilesList.toSeq){
+      filesystem.discoverFile(file.getFileId, event.getUserID)
     }
   }
 }

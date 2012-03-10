@@ -6,6 +6,7 @@ import collection.immutable
 import collection._
 import annotation.tailrec
 import mutable.Ctrie
+import com.orchid.user.UserID
 
 /**
  * User: Igor Petruk
@@ -23,22 +24,35 @@ case class Node(
   def withChildren(newChildren: Map[String, Node])= Node(id, name, isDir, size, newChildren)
 }
 
+case class NodePeers(node:Node, peers:List[UserID])
+
 trait FilesystemTree {
   def root:Node
   def file(path:String):Option[Node]
   def file(id:UUID):Option[Node]
   def setFile(parent: String, child:Node):Unit
+  def discoverFile(id:UUID, peer: UserID):Boolean
 }
 
 class FilesystemTreeImpl extends FilesystemTree{
   var rootNode:Node = Node(new UUID(0,0),"ROOT",true, 0,
     immutable.HashMap[String, Node]())
 
-  val nodesById:mutable.Map[UUID, Node]= Ctrie.empty
+  val nodesById:mutable.Map[UUID, NodePeers]= Ctrie.empty
 
   def root = rootNode
 
-  def file(id:UUID)= nodesById.get(id)
+  def discoverFile(id:UUID, peer: UserID):Boolean={
+    nodesById.get(id) match {
+      case Some(oldPeers) => {
+        nodesById += (id->NodePeers(oldPeers.node, peer::oldPeers.peers))
+        true
+      }
+      case _ => false
+    }
+  }
+
+  def file(id:UUID)= nodesById.get(id).map(_.node)
 
   def file(node:Node, fileName:String):Option[Node]=
     if (node.isDir)
@@ -74,7 +88,7 @@ class FilesystemTreeImpl extends FilesystemTree{
     else parent.split('/').toList
 
     for (newRoot <- setFileAsChild(root, pathList)){
-      nodesById+=(child.id->child)
+      nodesById+=(child.id->NodePeers(child, List()))
       rootNode = newRoot
     }
   }
