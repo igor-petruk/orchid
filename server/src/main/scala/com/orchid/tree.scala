@@ -26,6 +26,7 @@ case class Node(
 trait FilesystemTree {
   def root:Node
   def file(path:String):Option[Node]
+  def file(id:UUID):Option[Node]
   def setFile(parent: String, child:Node):Unit
 }
 
@@ -36,6 +37,8 @@ class FilesystemTreeImpl extends FilesystemTree{
   val nodesById:mutable.Map[UUID, Node]= Ctrie.empty
 
   def root = rootNode
+
+  def file(id:UUID)= nodesById.get(id)
 
   def file(node:Node, fileName:String):Option[Node]=
     if (node.isDir)

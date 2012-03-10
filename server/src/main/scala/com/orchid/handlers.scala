@@ -50,6 +50,7 @@ class HandlersModule extends AbstractModule{
     handlerBinder.addBinding().to(classOf[EchoHandler])
     handlerBinder.addBinding().to(classOf[MakeDirectoryHandler])
     handlerBinder.addBinding().to(classOf[CreateFileHandler])
+    handlerBinder.addBinding().to(classOf[FileInfoRequestHandler])
   }
 }
 
@@ -103,6 +104,39 @@ class CreateFileHandler extends MessageHandler{
     publisher.send(response.build(), event.getUserID)
   }
 }
+
+class FileInfoRequestHandler extends MessageHandler{
+  def handles = List(FILE_INFO_REQUEST)
+
+  import com.orchid.utils.FileUtils._
+
+  def handle(event: RingElement){
+    val message = extractMessage(event)
+    val fileInfoRequest = message.getFileInfoRequest
+    val fileFound = if (fileInfoRequest.getId.isEmpty)
+      filesystem.file(fileInfoRequest.getId)
+    else
+      filesystem.file(fileInfoRequest.getName)
+    
+    for (file <- fileFound){
+      val response = createMessage(FILE_INFO_RESPONSE)
+      response.setCookie(message.getCookie)
+      
+      if (fileInfoRequest.getListDirectory){
+        for (child <- file.children.values){
+          val info = buildFileInfo(child.name, child)
+          response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
+        }
+      }else{
+        val info = buildFileInfo(file.name, file)
+        response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
+      }
+
+      publisher.send(response.build(), event.getUserID)
+    }
+  }
+}
+
 
 
 
