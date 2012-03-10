@@ -50,11 +50,11 @@ class FilesystemTest extends Spec with GivenWhenThen{
       given("empty filesystem")
       val f = fixture
       when("file tree is are created")
-      val file1 = Node(new UUID(1,1),"file1", true, HashMap());
-      val file2 = Node(new UUID(2,2),"file2", true, HashMap());
-      val file3 = Node(new UUID(3,3),"file3", true, HashMap());
-      val file4 = Node(new UUID(4,4),"file4", true, HashMap());
-      val file5 = Node(new UUID(4,4),"file5", true, HashMap());
+      val file1 = Node(new UUID(1,1),"file1", true, 0,HashMap());
+      val file2 = Node(new UUID(2,2),"file2", true, 0,HashMap());
+      val file3 = Node(new UUID(3,3),"file3", true, 0,HashMap());
+      val file4 = Node(new UUID(4,4),"file4", true, 0,HashMap());
+      val file5 = Node(new UUID(4,4),"file5", true, 0,HashMap());
       f.filesystem.setFile("", file1)
       f.filesystem.setFile(file1.name, file2)
       f.filesystem.setFile(file1.name+"/"+file2.name, file3)
@@ -64,7 +64,7 @@ class FilesystemTest extends Spec with GivenWhenThen{
       def assertFile(path:String){
         then(path + " should be found")
         f.filesystem.file(path) match {
-          case None=>fail()
+          case None=>fail(path+ " not found")
           case _=>
         }
       }
@@ -78,7 +78,7 @@ class FilesystemTest extends Spec with GivenWhenThen{
 
   def benchmark{
     val f = fixture
-    val file5 = Node(new UUID(4,4),"file5", true, HashMap());
+    val file5 = Node(new UUID(4,4),"file5", true, 0,HashMap());
     var s = "file1"
     val rnd = new Random
     var filesCreated = 0;
@@ -87,7 +87,7 @@ class FilesystemTest extends Spec with GivenWhenThen{
       val start = System.currentTimeMillis()
       val times = 500;
       for (j<-1 until times){
-        val file = Node(uuid,"file"+rnd.nextInt, true, HashMap.empty);
+        val file = Node(uuid,"file"+rnd.nextInt, true, 0, HashMap.empty);
         f.filesystem.setFile(s, file)
         filesCreated+=1
       }
@@ -97,11 +97,13 @@ class FilesystemTest extends Spec with GivenWhenThen{
       if (i%10==0)println(filesCreated+" "+i+" "+times/time*1000)
       s+="/"+file5.name
     }
+    s = "file1"
+
     for(i <- -2 to 200000){
       val start = System.currentTimeMillis()
       val times = 500;
       for (j<-1 until times){
-        val file = Node(uuid,"file"+rnd.nextInt, true, HashMap.empty);
+        val file = Node(uuid,"file"+rnd.nextInt, true,0, HashMap.empty);
         f.filesystem.setFile(s, file)
         filesCreated+=1
       }

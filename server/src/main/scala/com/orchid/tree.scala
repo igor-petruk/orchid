@@ -15,9 +15,10 @@ case class Node(
   id:UUID,
   name:String,
   isDir:Boolean,
+  size:Long,
   children:Map[String, Node]){
 
-  def withChildren(newChildren: Map[String, Node])= Node(id, name, isDir, newChildren)
+  def withChildren(newChildren: Map[String, Node])= Node(id, name, isDir, size, newChildren)
 }
 
 trait FilesystemTree {
@@ -27,7 +28,7 @@ trait FilesystemTree {
 }
 
 class FilesystemTreeImpl extends FilesystemTree{
-  var rootNode:Node = Node(new UUID(0,0),"ROOT",true,
+  var rootNode:Node = Node(new UUID(0,0),"ROOT",true, 0,
     immutable.HashMap[String, Node]())
 
   def root = rootNode
@@ -56,15 +57,15 @@ class FilesystemTreeImpl extends FilesystemTree{
         Some(node.withChildren(node.children + (child.name->child)))
       else
         node.children.get(names.head) flatMap { oldChild=>
-         setFileAsChild(oldChild, names.tail) map {newChild=>
-           node.withChildren(node.children + (names.head->newChild))
-         }
-      }
+          setFileAsChild(oldChild, names.tail) map {newChild=>
+            node.withChildren(node.children + (names.head->newChild))
+          }
+        }
     }
 
     val pathList = if (parent.isEmpty) List.empty
-                  else parent.split('/').toList
-    
+    else parent.split('/').toList
+
     for (newRoot <- setFileAsChild(root, pathList)){
       rootNode = newRoot
     }
