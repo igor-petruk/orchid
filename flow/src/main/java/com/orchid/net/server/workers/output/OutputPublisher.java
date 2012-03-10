@@ -10,11 +10,13 @@ import com.orchid.user.UserID;
  * Time: 23:57
  */
 public class OutputPublisher implements EventTranslator<RingElement>{
-    RingElement message;
+    Object message;
+    UserID userID;
 
-    public void send(RingElement message, UserID... recepients){
+    public void send(Object message, UserID... recepients){
         this.message = message;
         for (UserID userID: recepients){
+            this.userID = userID;
             OutputWorker outputWorker = userID.getOutputWorker();
             outputWorker.getDisruptor().publishEvent(this);
         }
@@ -23,8 +25,8 @@ public class OutputPublisher implements EventTranslator<RingElement>{
 
     @Override
     public RingElement translateTo(RingElement event, long sequence) {
-        event.message = message.message;
-        event.userID = message.userID;
+        event.message = message;
+        event.userID = userID;
         return event;
     }
 }

@@ -1,6 +1,33 @@
 package com.orchid.utils
 
 import annotation.tailrec
+import com.orchid.tree.Node
+import com.orchid.messages.generated.Messages.GeneralFileInfo
+import com.google.protobuf.ByteString
+import java.util.UUID
+import com.fasterxml.uuid.impl.UUIDUtil
+
+object FileUtils{
+  implicit def bs2uuid(bs:ByteString):UUID = UUIDUtil.uuid(bs.toByteArray)
+
+  implicit def uuid2bs(uuid:UUID):ByteString = ByteString.copyFrom(UUIDUtil.asByteArray(uuid))
+
+  def splitPath(path:String)={
+    val pathAndDir = path.splitAt(path.lastIndexOf("/"))
+    (pathAndDir._1,
+      if (pathAndDir._2.startsWith("/")) pathAndDir._2.substring(1)
+      else pathAndDir._2)
+  }
+
+  def buildFileInfo(fullName:String, node:Node)={
+     val infoBuilder = GeneralFileInfo.newBuilder();
+    infoBuilder.setFileId(node.id)
+    infoBuilder.setFileName(fullName)
+    infoBuilder.setFileSize(node.size)
+    infoBuilder.setIsDirectory(node.isDir)
+    infoBuilder.build()
+  }
+}
 
 object EnumMap {
   def apply[K <: Enum[_], T](implicit k: Manifest[K], t: Manifest[T]) = {

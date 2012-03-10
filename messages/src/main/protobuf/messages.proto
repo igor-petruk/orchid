@@ -61,7 +61,7 @@ message GeneralFileInfo{
     required string fileName = 1;
     required bytes fileId = 3;
     optional bool isDirectory = 4  [default = false];
-    optional int32 fileSize = 5 [default = 0];
+    optional int64 fileSize = 5 [default = 0];
 }
 
 // This messages server sends after he received INTRODUCE
@@ -87,7 +87,7 @@ enum BlockCompressionType{
 
 message BlockRequest{
 	required bytes fileId = 1;
-	required int32 blockId = 2;	
+	required int64 blockId = 2;
 	optional BlockCompressionType compressionHint = 3 [default=GZIP];
 }
 
@@ -104,7 +104,8 @@ message FileInfoRequest{
 }
 
 message MakeDirectory {
-	required string path = 1;
+    required bytes fileId = 1;
+	required string path = 2;
 }
 
 message FileInfoResponse{

@@ -53,6 +53,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.guiceberry</groupId>
             <artifactId>guiceberry</artifactId>
             <scope>test</scope>

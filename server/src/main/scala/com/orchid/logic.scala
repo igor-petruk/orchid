@@ -12,6 +12,7 @@ import scala.collection.JavaConversions._
 import com.orchid.{HandlersModule, MessageHandler}
 import com.orchid.utils._
 import com.orchid.messages.generated.Messages.{MessageType, MessageContainer}
+import com.orchid.tree.FilesystemTreeModule
 
 /**
  * User: Igor Petruk
@@ -43,6 +44,7 @@ class BusinessLogicEventHandler @Inject()
 
 class LogicModule extends AbstractModule {
   protected def configure {
+    install(new FilesystemTreeModule)
     install(new HandlersModule)
     bind(new TypeLiteral[EventHandler[RingElement]] {}).
       annotatedWith(classOf[BusinessLogic]).
