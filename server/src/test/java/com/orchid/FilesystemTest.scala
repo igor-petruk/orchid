@@ -83,21 +83,34 @@ class FilesystemTest extends Spec with GivenWhenThen{
     val rnd = new Random
     var filesCreated = 0;
     val uuid = new UUID(4,4)
-    for(i <- 0 to 200000){
-      for (j<-0 to 30){
+    for(i <- -2 to 100){
+      val start = System.currentTimeMillis()
+      val times = 500;
+      for (j<-1 until times){
         val file = Node(uuid,"file"+rnd.nextInt, true, HashMap.empty);
         f.filesystem.setFile(s, file)
         filesCreated+=1
       }
-      val start = System.currentTimeMillis()
       f.filesystem.setFile(s, file5)
-      val time = System.currentTimeMillis()-start
       filesCreated+=1
-
-      if (i%100==0) println(i+" "+filesCreated+" "+time)
+      val time:Double = System.currentTimeMillis()-start
+      if (i%10==0)println(filesCreated+" "+i+" "+times/time*1000)
+      s+="/"+file5.name
+    }
+    for(i <- -2 to 200000){
+      val start = System.currentTimeMillis()
+      val times = 500;
+      for (j<-1 until times){
+        val file = Node(uuid,"file"+rnd.nextInt, true, HashMap.empty);
+        f.filesystem.setFile(s, file)
+        filesCreated+=1
+      }
+      f.filesystem.setFile(s, file5)
+      filesCreated+=1
+      val time:Double = System.currentTimeMillis()-start
+      if (i%10==0)println(filesCreated+" "+i+" "+times/time*1000)
       s+="/"+file5.name
     }
     while(true){}
-
   }
 }

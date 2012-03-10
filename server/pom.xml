@@ -33,6 +33,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.scalaz</groupId>
+            <artifactId>scalaz-core_2.9.1</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-multibindings</artifactId>
         </dependency>

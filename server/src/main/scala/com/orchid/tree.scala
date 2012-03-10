@@ -5,7 +5,6 @@ import java.util.UUID
 import collection.immutable
 import annotation.tailrec
 
-
 /**
  * User: Igor Petruk
  * Date: 07.03.12
@@ -16,8 +15,10 @@ case class Node(
   id:UUID,
   name:String,
   isDir:Boolean,
-  children:Map[String, Node]
-)
+  children:Map[String, Node]){
+
+  def withChildren(newChildren: Map[String, Node])= Node(id, name, isDir, newChildren)
+}
 
 trait FilesystemTree {
   def root:Node
@@ -52,33 +53,17 @@ class FilesystemTreeImpl extends FilesystemTree{
   def setFile(parent: String, child:Node){
     def setFileAsChild(node:Node, names: List[String]):Option[Node]={
       if (names.isEmpty)
-        Some(Node(
-          node.id,
-          node.name,
-          node.isDir,
-          node.children + (child.name->child)
-        ))
-      else 
-        node.children.get(names.head) match {
-        case Some(oldChild)=>
-          val newChild = setFileAsChild(oldChild, names.tail)
-          newChild match {
-            case Some(newChildNode) => Some(Node(
-              node.id,
-              node.name,
-              node.isDir,
-              node.children + (names.head->newChildNode)
-            ))
-            case _ => None
-          }
-        case _ => None
+        Some(node.withChildren(node.children + (child.name->child)))
+      else
+        node.children.get(names.head) flatMap { oldChild=>
+         setFileAsChild(oldChild, names.tail) map {newChild=>
+           node.withChildren(node.children + (names.head->newChild))
+         }
       }
     }
 
-    val pathList = if (parent.isEmpty) 
-                      List.empty 
-                  else 
-                      parent.split('/').toList
+    val pathList = if (parent.isEmpty) List.empty
+                  else parent.split('/').toList
     
     for (newRoot <- setFileAsChild(root, pathList)){
       rootNode = newRoot
