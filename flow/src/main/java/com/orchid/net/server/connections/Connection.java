@@ -4,6 +4,7 @@ import com.orchid.net.streams.BufferAggerator;
 import com.orchid.net.streams.ExpandingBuffer;
 import com.orchid.user.UserID;
 
+import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
@@ -79,6 +80,8 @@ public class Connection {
 
     public void dispose(){
         disposed = true;
+        bufferAggerator.close();
+        expandingBuffer.close();
     }
 
     public boolean isDisposed() {

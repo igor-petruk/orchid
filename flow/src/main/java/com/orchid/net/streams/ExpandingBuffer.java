@@ -70,4 +70,8 @@ public class ExpandingBuffer {
         }
         return outcome;
     }
+
+    public void close() {
+        usedBuffers.dispose();
+    }
 }
