@@ -7,7 +7,7 @@ import com.orchid.messages.generated.Messages.{MessageType, MessageContainer}
 import com.orchid.ring.{ControlMessageType, EventType, RingElement}
 import com.orchid.flow.Flow
 import com.orchid.serialization.ProtobufMessageSerializer
-import com.orchid.{HandlersComponent, ControlMessageHandler, DataMessageHandler}
+import com.orchid.{MessageHandler, HandlersComponent, ControlMessageHandler, DataMessageHandler}
 
 /**
  * User: Igor Petruk
@@ -15,35 +15,27 @@ import com.orchid.{HandlersComponent, ControlMessageHandler, DataMessageHandler}
  * Time: 17:40
  */
 class BusinessLogicEventHandler extends EventHandler[RingElement] {
-  /*
-implicit def list2enum[L <: Enum[_],V]
-  (list: List[MessageHandler{type MessageTypeToHandle=Enum[L]}])
-  ={
-    list.foldLeft(){
-      (map, handler) =>{
-      val handlerMap = handler.handles.map(x=>(x, handler))
-      map ++ handlerMap
+
+  /* WTF ?!? */
+  implicit def list2enum[L <: Enum[_],
+      V <: MessageHandler{type MessageTypeToHandle=L}]
+      (list: List[V])
+      (implicit l:Manifest[L], v:Manifest[V])={
+        list.foldLeft(EnumMap.apply(l,v)){
+          (map, handler) =>{
+            val handlerMap = handler.handles.map(x=>(x, handler))
+            map ++ handlerMap
+        }
     }
   }
-  }*/
 
   var controlHandlers=EnumMap[ControlMessageType, ControlMessageHandler]
   var dataHandlers=EnumMap[MessageType, DataMessageHandler]
 
   def setupHandlers(dataHandlerObjects: List[DataMessageHandler],
                     controlHandlerObjects: List[ControlMessageHandler]){
-    controlHandlers =  controlHandlerObjects.foldLeft(controlHandlers){
-        (map, handler) =>{
-          val handlerMap = handler.handles.map(x=>(x, handler))
-          map ++ handlerMap
-        }
-    }
-    dataHandlers =  dataHandlerObjects.foldLeft(dataHandlers){
-          (map, handler) =>{
-            val handlerMap = handler.handles.map(x=>(x, handler))
-            map ++ handlerMap
-          }
-    }
+    controlHandlers =  controlHandlerObjects
+    dataHandlers =  dataHandlerObjects
   }
 
   def onEvent(event: RingElement, sequence: Long, endOfBatch: Boolean) {

@@ -50,8 +50,6 @@ class ControlHandlersAll extends ControlMessageHandler{
   }
 }
 
-
-
 trait HandlersComponent {
   self: FlowConnectorComponent with FilesystemTreeComponent=>
   {
