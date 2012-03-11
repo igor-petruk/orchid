@@ -19,6 +19,12 @@ public class RingElement {
         setMessage(element.getMessage());
     }
 
+    public EventType getEventType(){
+        return (controlMessage==null)?
+                EventType.NETWORK_MESSAGE:
+                EventType.CONTROL_MESSAGE;
+    }
+
     public Object getMessage() {
         return message;
     }

@@ -2,9 +2,9 @@ package com.orchid
 
 import messages.generated.Messages
 import messages.generated.Messages.MessageType._
+import com.orchid.ring.ControlMessageType._
 import messages.generated.Messages.{FileInfoResponse, MessageContainer, MessageType}
 import net.server.workers.output.OutputPublisher
-import ring.RingElement
 import javax.inject.Inject
 import com.google.inject.AbstractModule
 import com.google.inject.multibindings.Multibinder
@@ -13,6 +13,7 @@ import com.google.protobuf.ByteString
 import java.util.UUID
 import com.orchid.tree.{Node, FilesystemTree}
 import collection.immutable.HashMap
+import ring.{ControlMessageType, RingElement}
 ;
 
 /**
@@ -28,9 +29,11 @@ trait MessageHandler{
   @Inject
   var publisher: OutputPublisher = null
 
-  def handles:List[MessageType]
-
   def handle(event: RingElement)
+}
+
+trait DataMessageHandler extends MessageHandler{
+  def handles:List[MessageType]
 
   def extractMessage(event:RingElement)=
     event.getMessage.asInstanceOf[MessageContainer]
@@ -40,22 +43,39 @@ trait MessageHandler{
     builder.setMessageType(messageType)
     builder
   }
+}
 
-//  def respond(event:RingElement, message: E)
+trait ControlMessageHandler extends MessageHandler{
+  def handles:List[ControlMessageType]
+
+  def extractMessage(event:RingElement)=event.getControlMessage
+}
+
+class ControlHandlersAll extends ControlMessageHandler{
+  def handles = List(USER_CONNECTED, USER_DISCONNECTED)
+
+  def handle(event: RingElement) ={
+    println(extractMessage(event).getControlMessageType)
+  }
 }
 
 class HandlersModule extends AbstractModule{
   def configure() {
-    val handlerBinder = Multibinder.newSetBinder(binder(), classOf[MessageHandler])
-    handlerBinder.addBinding().to(classOf[EchoHandler])
-    handlerBinder.addBinding().to(classOf[MakeDirectoryHandler])
-    handlerBinder.addBinding().to(classOf[CreateFileHandler])
-    handlerBinder.addBinding().to(classOf[FileInfoRequestHandler])
-    handlerBinder.addBinding().to(classOf[DiscoverFileHandler])
+    val dataHandlersBinder = Multibinder.newSetBinder(binder(),
+      classOf[DataMessageHandler])
+    dataHandlersBinder.addBinding().to(classOf[EchoHandlerData])
+    dataHandlersBinder.addBinding().to(classOf[MakeDirectoryHandlerData])
+    dataHandlersBinder.addBinding().to(classOf[CreateFileHandlerData])
+    dataHandlersBinder.addBinding().to(classOf[FileInfoRequestHandlerData])
+    dataHandlersBinder.addBinding().to(classOf[DiscoverFileHandlerData])
+
+    val controlMessageHandlers = Multibinder.newSetBinder(binder(),
+      classOf[ControlMessageHandler])
+    controlMessageHandlers.addBinding().to(classOf[ControlHandlersAll])
   }
 }
 
-class EchoHandler extends MessageHandler{
+class EchoHandlerData extends DataMessageHandler{
   def handles = List(ECHO)
 
   def handle(event: RingElement){
@@ -63,7 +83,7 @@ class EchoHandler extends MessageHandler{
   }
 }
 
-class MakeDirectoryHandler extends MessageHandler{
+class MakeDirectoryHandlerData extends DataMessageHandler{
   def handles = List(MAKE_DIRECTORY)
 
   import com.orchid.utils.FileUtils._
@@ -84,7 +104,7 @@ class MakeDirectoryHandler extends MessageHandler{
   }
 }
 
-class CreateFileHandler extends MessageHandler{
+class CreateFileHandlerData extends DataMessageHandler{
   def handles = List(CREATE_FILE)
 
   import com.orchid.utils.FileUtils._
@@ -106,7 +126,7 @@ class CreateFileHandler extends MessageHandler{
   }
 }
 
-class FileInfoRequestHandler extends MessageHandler{
+class FileInfoRequestHandlerData extends DataMessageHandler{
   def handles = List(FILE_INFO_REQUEST)
 
   import com.orchid.utils.FileUtils._
@@ -138,7 +158,7 @@ class FileInfoRequestHandler extends MessageHandler{
   }
 }
 
-class DiscoverFileHandler extends MessageHandler{
+class DiscoverFileHandlerData extends DataMessageHandler{
   def handles = List(DISCOVER_FILE)
 
   import com.orchid.utils.FileUtils._
