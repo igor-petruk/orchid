@@ -20,8 +20,8 @@ class BusinessLogicEventHandler extends EventHandler[RingElement] {
   implicit def list2enum[L <: Enum[_],
       V <: MessageHandler{type MessageTypeToHandle=L}]
       (list: List[V]) (implicit l:Manifest[L], v:Manifest[V])={
-    list.foldLeft(EnumMap.apply(l,v)){
-      (map, handler) => map ++ handler.handles.map(x=>(x, handler))
+    list.foldLeft(EnumMap(l,v)){
+      (map, handler) => map ++ handler.handles.map(_->handler)
     }
   }
 
