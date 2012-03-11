@@ -1,16 +1,12 @@
 package com.orchid;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
 import com.google.guiceberry.GuiceBerryModule;
 import com.google.guiceberry.junit4.GuiceBerryRule;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 import com.lmax.disruptor.EventHandler;
 import com.orchid.logging.LoggingModule;
-import com.orchid.logic.LogicModule;
 import com.orchid.logic.annotations.BusinessLogic;
 import com.orchid.messages.generated.Messages;
 import com.orchid.net.server.NetworkServerModule;
@@ -19,6 +15,7 @@ import com.orchid.net.server.main.NetworkServer;
 import com.orchid.net.server.workers.input.InputWorkersCount;
 import com.orchid.net.server.workers.output.OutputPublisher;
 import com.orchid.net.server.workers.output.OutputWorkersCount;
+import com.orchid.ring.EventType;
 import com.orchid.ring.InputRingModule;
 import com.orchid.ring.RingElement;
 import com.orchid.net.streams.BufferSize;
@@ -29,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.*;
 import java.net.Socket;
@@ -39,9 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.junit.Assert.*;
 
@@ -192,10 +185,30 @@ public class ServerIntegrationTests {
             install(new LoggingModule());
             install(Modules.override(new NetworkServerModule()).with(new NetworkServerExtension()));
             install(new InputRingModule());
-            install(new LogicModule());
+            install(new EchoLogicModule());
         }
     }
+    
+    static class EchoLogicModule extends AbstractModule{
+        @Override
+        protected void configure() {
+            bind(new TypeLiteral<EventHandler<RingElement> >(){}).
+            annotatedWith(BusinessLogic.class).
+            to(EchoRespondingHandler.class).
+             in(Singleton.class);
+        }
+    }
+    
+    static class EchoRespondingHandler implements EventHandler<RingElement>{
+        @Inject
+        OutputPublisher outputPublisher;
 
-
+        @Override
+        public void onEvent(RingElement event, long sequence, boolean endOfBatch) throws Exception {
+            if (event.getEventType().equals(EventType.NETWORK_MESSAGE)){
+                outputPublisher.send(event.getMessage(), event.getUserID());
+            }
+        }
+    }
 }
 
