@@ -6,6 +6,8 @@ import com.orchid.net.server.workers.Worker;
 import com.orchid.net.streams.BufferAggerator;
 import com.orchid.net.streams.BufferPool;
 import com.orchid.net.streams.MessageHandler;
+import com.orchid.ring.ControlMessage;
+import com.orchid.ring.ControlMessageType;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
@@ -44,6 +46,8 @@ public class InputWorker extends Worker implements Runnable{
         try{
             BufferAggerator bufferAggerator = new BufferAggerator(bufferPool,messageHandler);
             connection.setBufferAggerator(bufferAggerator);
+            messageHandler.publishControlMessage(connection.getUserID(),
+                    new ControlMessage(ControlMessageType.USER_CONNECTED));
             synchronized (this){
                 selector.wakeup();
                 SelectionKey readingKey = connection.getSocketChannel().register(selector,
@@ -101,6 +105,9 @@ public class InputWorker extends Worker implements Runnable{
         boolean running = connection.getBufferAggerator().
                 readSome(connection.getUserID(), socketChannel);
         if (!running){
+            connection.dispose();
+            messageHandler.publishControlMessage(connection.getUserID(),
+                    new ControlMessage(ControlMessageType.USER_DISCONNECTED));
             handleDisconnect(key);
         }
     }

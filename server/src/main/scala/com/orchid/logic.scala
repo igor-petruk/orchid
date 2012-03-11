@@ -31,10 +31,14 @@ class BusinessLogicEventHandler @Inject()
   }
   
   def onEvent(event: RingElement, sequence: Long, endOfBatch: Boolean) {
-    val container = event.getMessage.asInstanceOf[MessageContainer]
-    handlers.get(container.getMessageType) match {
-      case Some(handler) => handler.handle(event)
-      case _ =>
+    if (event.getControlMessage==null){
+      val container = event.getMessage.asInstanceOf[MessageContainer]
+      handlers.get(container.getMessageType) match {
+        case Some(handler) => handler.handle(event)
+        case _ =>
+      }
+    }else{
+      println(event.getControlMessage.getControlMessageType)
     }
   }
 

@@ -22,6 +22,7 @@ public class Connection {
     Queue<Object> outputQueue;
     SelectionKey outputKey;
     boolean currentlySending;
+    boolean disposed = false;
 
     public ExpandingBuffer getExpandingBuffer() {
         return expandingBuffer;
@@ -77,6 +78,10 @@ public class Connection {
     }
 
     public void dispose(){
+        disposed = true;
+    }
 
+    public boolean isDisposed() {
+        return disposed;
     }
 }

@@ -6,6 +6,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.util.Modules;
 import com.orchid.messages.generated.Messages;
 import com.orchid.net.streams.*;
+import com.orchid.ring.ControlMessage;
 import com.orchid.user.UserID;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +30,11 @@ public class BufferIntegrationTests {
     File tmp;
 
     class StringMessageHandler implements MessageHandler {
+        @Override
+        public void publishControlMessage(UserID userID, ControlMessage controlMessage) {
+
+        }
+
         @Override
         public void handleMessage(UserID userID, ReadableByteChannel byteChannel) {
            // Scanner scanner = new Scanner(Channels.newInputStream(byteChannel));
@@ -103,6 +109,11 @@ public class BufferIntegrationTests {
 }
 
 class TestMessageHandler implements MessageHandler{
+    @Override
+    public void publishControlMessage(UserID userID, ControlMessage controlMessage) {
+
+    }
+
     @Override
     public void handleMessage(UserID userID, ReadableByteChannel byteChannel) {
         

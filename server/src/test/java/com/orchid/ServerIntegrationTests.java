@@ -140,6 +140,7 @@ public class ServerIntegrationTests {
                 }
                 messagesCount--;
             }
+            socket.close();
             return null;
         }
     }

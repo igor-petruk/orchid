@@ -11,8 +11,10 @@ import com.orchid.user.UserID;
 public class RingElement {
     public Object message;
     public UserID userID;
+    public ControlMessage controlMessage;
 
     public void copyFrom(RingElement element){
+        setControlMessage(element.getControlMessage());
         setUserID(element.getUserID());
         setMessage(element.getMessage());
     }
@@ -31,6 +33,14 @@ public class RingElement {
 
     public void setUserID(UserID userID) {
         this.userID = userID;
+    }
+
+    public ControlMessage getControlMessage() {
+        return controlMessage;
+    }
+
+    public void setControlMessage(ControlMessage controlMessage) {
+        this.controlMessage = controlMessage;
     }
 
     public final static EventFactory<RingElement> EVENT_FACTORY = new EventFactory<RingElement>() {

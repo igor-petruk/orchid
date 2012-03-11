@@ -30,12 +30,20 @@ public class InputRingPublisher implements MessageHandler, EventTranslator<RingE
     long msg = 0;
 
     @Override
+    public void publishControlMessage(UserID userID, ControlMessage controlMessage) {
+        currentElement.setControlMessage(controlMessage);
+        currentElement.setUserID(userID);
+        disruptor.publishEvent(this);
+    }
+
+    @Override
     public void handleMessage(UserID userID, ReadableByteChannel byteChannel) {
         try{
             BufferAggregatorInputStream b = (BufferAggregatorInputStream)byteChannel;
             Object message = serializer.readMessage(Channels.newInputStream(b));
             currentElement.setUserID(userID);
             currentElement.setMessage(message);
+            currentElement.setControlMessage(null);
             disruptor.publishEvent(this);
         }catch(Exception e){
             e.printStackTrace();
