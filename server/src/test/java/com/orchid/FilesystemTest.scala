@@ -2,12 +2,11 @@ package com.orchid
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.google.inject.{Guice}
 import org.scalatest.{GivenWhenThen, Spec}
-import com.orchid.tree.{Node, FilesystemTree, FilesystemTreeModule}
 import java.util.UUID
 import collection.immutable.HashMap
 import util.Random
+import com.orchid.tree.{FilesystemTreeImpl, Node, FilesystemTree}
 
 /**
  * User: Igor Petruk
@@ -19,8 +18,7 @@ import util.Random
 class FilesystemTest extends Spec with GivenWhenThen{
 
   def fixture = new {
-    val injector = Guice.createInjector(new FilesystemTreeModule)
-    val filesystem = injector.getInstance(classOf[FilesystemTree])
+    val filesystem:FilesystemTree = new FilesystemTreeImpl
   }
 
   describe("A filesystem "){

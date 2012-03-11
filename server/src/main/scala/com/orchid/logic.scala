@@ -1,43 +1,49 @@
 package com.orchid.logic
 
-import com.google.inject.{TypeLiteral, AbstractModule}
-import com.orchid.messages.generated.Messages
 import com.orchid.net.server.workers.output.OutputPublisher
-import javax.inject.Inject
-import javax.inject.Singleton
 import com.lmax.disruptor.EventHandler
-import com.orchid.logic.annotations.BusinessLogic
-import scala.collection.JavaConversions._
 import com.orchid.utils._
 import com.orchid.messages.generated.Messages.{MessageType, MessageContainer}
-import com.orchid.tree.FilesystemTreeModule
-import com.orchid.{ControlMessageHandler, HandlersModule, DataMessageHandler}
 import com.orchid.ring.{ControlMessageType, EventType, RingElement}
+import com.orchid.flow.Flow
+import com.orchid.serialization.ProtobufMessageSerializer
+import com.orchid.{HandlersComponent, ControlMessageHandler, DataMessageHandler}
 
 /**
  * User: Igor Petruk
  * Date: 01.01.12
  * Time: 17:40
  */
-class BusinessLogicEventHandler @Inject()
-  (dataHandlerObjects: java.util.Set[DataMessageHandler],
-   controlHandlerObjects: java.util.Set[ControlMessageHandler]
-    )
-  extends EventHandler[RingElement] {
-
-  val dataHandlers = dataHandlerObjects.foldLeft(EnumMap[MessageType, DataMessageHandler])
-  {(map, handler) =>{
-    val handlerMap = handler.handles.map(x=>(x, handler))
-    map ++ handlerMap
+class BusinessLogicEventHandler extends EventHandler[RingElement] {
+  /*
+implicit def list2enum[L <: Enum[_],V]
+  (list: List[MessageHandler{type MessageTypeToHandle=Enum[L]}])
+  ={
+    list.foldLeft(){
+      (map, handler) =>{
+      val handlerMap = handler.handles.map(x=>(x, handler))
+      map ++ handlerMap
+    }
   }
-  }
+  }*/
 
-  val controlHandlers = controlHandlerObjects.foldLeft(
-    EnumMap[ControlMessageType, ControlMessageHandler])
-      {(map, handler) =>{
-        val handlerMap = handler.handles.map(x=>(x, handler))
-        map ++ handlerMap
-      }
+  var controlHandlers=EnumMap[ControlMessageType, ControlMessageHandler]
+  var dataHandlers=EnumMap[MessageType, DataMessageHandler]
+
+  def setupHandlers(dataHandlerObjects: List[DataMessageHandler],
+                    controlHandlerObjects: List[ControlMessageHandler]){
+    controlHandlers =  controlHandlerObjects.foldLeft(controlHandlers){
+        (map, handler) =>{
+          val handlerMap = handler.handles.map(x=>(x, handler))
+          map ++ handlerMap
+        }
+    }
+    dataHandlers =  dataHandlerObjects.foldLeft(dataHandlers){
+          (map, handler) =>{
+            val handlerMap = handler.handles.map(x=>(x, handler))
+            map ++ handlerMap
+          }
+    }
   }
 
   def onEvent(event: RingElement, sequence: Long, endOfBatch: Boolean) {
@@ -56,17 +62,16 @@ class BusinessLogicEventHandler @Inject()
       }
     }
   }
-
-  @Inject
-  var publisher: OutputPublisher = _
 }
 
-class LogicModule extends AbstractModule {
-  protected def configure {
-    install(new FilesystemTreeModule)
-    install(new HandlersModule)
-    bind(new TypeLiteral[EventHandler[RingElement]] {}).
-      annotatedWith(classOf[BusinessLogic]).
-      to(classOf[BusinessLogicEventHandler]).in(classOf[Singleton])
-  }
+trait FlowConnectorComponent{
+  self: HandlersComponent =>
+  def port:Int
+  val eventHandler = new BusinessLogicEventHandler
+  val flow = new Flow(
+      new ProtobufMessageSerializer,
+      port,
+      eventHandler
+    )
+  val outputPublisher:OutputPublisher = flow.getPublisher
 }

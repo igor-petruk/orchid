@@ -12,9 +12,15 @@ import javax.inject.Singleton;
  * Time: 10:52
  */
 public class MainServerModule extends AbstractModule{
+    int port;
+
+    public MainServerModule(int port) {
+        this.port = port;
+    }
+
     @Override
     protected void configure() {
-        bind(Integer.class).annotatedWith(ServerPort.class).toInstance(9800);
+        bind(Integer.class).annotatedWith(ServerPort.class).toInstance(port);
         bind(NetworkServer.class).to(ReactorNetworkServer.class).in(Singleton.class);
     }
 }

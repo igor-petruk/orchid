@@ -1,19 +1,14 @@
 package com.orchid
 
-import messages.generated.Messages
+import logic.FlowConnectorComponent
 import messages.generated.Messages.MessageType._
 import com.orchid.ring.ControlMessageType._
 import messages.generated.Messages.{FileInfoResponse, MessageContainer, MessageType}
 import net.server.workers.output.OutputPublisher
-import javax.inject.Inject
-import com.google.inject.AbstractModule
-import com.google.inject.multibindings.Multibinder
-import com.fasterxml.uuid.impl.UUIDUtil
-import com.google.protobuf.ByteString
 import java.util.UUID
-import com.orchid.tree.{Node, FilesystemTree}
 import collection.immutable.HashMap
 import ring.{ControlMessageType, RingElement}
+import com.orchid.tree.{FilesystemTreeComponent, Node, FilesystemTree}
 ;
 
 /**
@@ -21,19 +16,15 @@ import ring.{ControlMessageType, RingElement}
  * Date: 05.03.12
  * Time: 16:53
  */
-
 trait MessageHandler{
-  @Inject
-  var filesystem: FilesystemTree = null
-
-  @Inject
-  var publisher: OutputPublisher = null
-
+  type MessageTypeToHandle
   def handle(event: RingElement)
+
+  def handles:List[MessageTypeToHandle]
 }
 
 trait DataMessageHandler extends MessageHandler{
-  def handles:List[MessageType]
+  type MessageTypeToHandle = MessageType
 
   def extractMessage(event:RingElement)=
     event.getMessage.asInstanceOf[MessageContainer]
@@ -46,7 +37,7 @@ trait DataMessageHandler extends MessageHandler{
 }
 
 trait ControlMessageHandler extends MessageHandler{
-  def handles:List[ControlMessageType]
+  type MessageTypeToHandle = ControlMessageType
 
   def extractMessage(event:RingElement)=event.getControlMessage
 }
@@ -59,23 +50,26 @@ class ControlHandlersAll extends ControlMessageHandler{
   }
 }
 
-class HandlersModule extends AbstractModule{
-  def configure() {
-    val dataHandlersBinder = Multibinder.newSetBinder(binder(),
-      classOf[DataMessageHandler])
-    dataHandlersBinder.addBinding().to(classOf[EchoHandlerData])
-    dataHandlersBinder.addBinding().to(classOf[MakeDirectoryHandlerData])
-    dataHandlersBinder.addBinding().to(classOf[CreateFileHandlerData])
-    dataHandlersBinder.addBinding().to(classOf[FileInfoRequestHandlerData])
-    dataHandlersBinder.addBinding().to(classOf[DiscoverFileHandlerData])
 
-    val controlMessageHandlers = Multibinder.newSetBinder(binder(),
-      classOf[ControlMessageHandler])
-    controlMessageHandlers.addBinding().to(classOf[ControlHandlersAll])
+
+trait HandlersComponent {
+  self: FlowConnectorComponent with FilesystemTreeComponent=>
+  {
+    val dataMessageHandlers:List[DataMessageHandler] = List(
+         new EchoHandlerData(outputPublisher),
+         new DiscoverFileHandlerData(filesystem),
+         new MakeDirectoryHandlerData(filesystem, outputPublisher),
+         new CreateFileHandlerData(filesystem, outputPublisher),
+         new FileInfoRequestHandlerData(filesystem, outputPublisher))
+
+    val controlMessageHandlers:List[ControlMessageHandler] = List(
+      new ControlHandlersAll)
+
+    eventHandler.setupHandlers(dataMessageHandlers, controlMessageHandlers)
   }
 }
 
-class EchoHandlerData extends DataMessageHandler{
+class EchoHandlerData(publisher:OutputPublisher) extends DataMessageHandler{
   def handles = List(ECHO)
 
   def handle(event: RingElement){
@@ -83,7 +77,9 @@ class EchoHandlerData extends DataMessageHandler{
   }
 }
 
-class MakeDirectoryHandlerData extends DataMessageHandler{
+class MakeDirectoryHandlerData(filesystem:FilesystemTree,
+                               publisher:OutputPublisher)
+  extends DataMessageHandler{
   def handles = List(MAKE_DIRECTORY)
 
   import com.orchid.utils.FileUtils._
@@ -104,7 +100,9 @@ class MakeDirectoryHandlerData extends DataMessageHandler{
   }
 }
 
-class CreateFileHandlerData extends DataMessageHandler{
+class CreateFileHandlerData(filesystem:FilesystemTree,
+                            publisher:OutputPublisher)
+  extends DataMessageHandler{
   def handles = List(CREATE_FILE)
 
   import com.orchid.utils.FileUtils._
@@ -126,7 +124,9 @@ class CreateFileHandlerData extends DataMessageHandler{
   }
 }
 
-class FileInfoRequestHandlerData extends DataMessageHandler{
+class FileInfoRequestHandlerData (filesystem:FilesystemTree,
+                                  publisher:OutputPublisher)
+  extends DataMessageHandler{
   def handles = List(FILE_INFO_REQUEST)
 
   import com.orchid.utils.FileUtils._
@@ -158,7 +158,8 @@ class FileInfoRequestHandlerData extends DataMessageHandler{
   }
 }
 
-class DiscoverFileHandlerData extends DataMessageHandler{
+class DiscoverFileHandlerData (filesystem:FilesystemTree)
+  extends DataMessageHandler{
   def handles = List(DISCOVER_FILE)
 
   import com.orchid.utils.FileUtils._

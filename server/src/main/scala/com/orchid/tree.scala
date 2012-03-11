@@ -1,8 +1,6 @@
 package com.orchid.tree
 
-import com.google.inject.{Singleton, AbstractModule}
 import java.util.UUID
-import collection.immutable
 import collection._
 import annotation.tailrec
 import mutable.Ctrie
@@ -94,9 +92,7 @@ class FilesystemTreeImpl extends FilesystemTree{
   }
 }
 
-class FilesystemTreeModule extends AbstractModule{
-  def configure() {
-    bind(classOf[FilesystemTree]).to(classOf[FilesystemTreeImpl]).
-      in(classOf[javax.inject.Singleton])
-  }
+trait FilesystemTreeComponent {
+  val filesystem:FilesystemTree = new FilesystemTreeImpl
 }
+

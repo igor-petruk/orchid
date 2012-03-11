@@ -1,12 +1,8 @@
 package com.orchid.main
 
-import com.orchid.logging.LoggingModule
-import com.orchid.flow.FlowModule
-import com.orchid.serialization.ProtobufMessageSerializationModule
-import com.orchid.logic.LogicModule
-import com.orchid.logic.LogicModule
-import com.google.inject.{Guice, Injector, AbstractModule}
-import com.orchid.net.server.main.NetworkServer
+import com.orchid.tree.FilesystemTreeComponent
+import com.orchid.HandlersComponent
+import com.orchid.logic.FlowConnectorComponent
 
 /**
  * User: Igor Petruk
@@ -14,25 +10,21 @@ import com.orchid.net.server.main.NetworkServer
  * Time: 20:58
  */
 
+abstract class App extends FilesystemTreeComponent
+                  with FlowConnectorComponent
+                  with HandlersComponent{
+  def start{
+    flow.start()
+  }
+}
+
 object Runner {
 
-  /**
-   * User: Igor Petruk
-   * Date: 18.02.12
-   * Time: 16:20
-   */
-  class RunnerModule extends AbstractModule {
-    def configure {
-      install(new LoggingModule)
-      install(new FlowModule)
-      install(new ProtobufMessageSerializationModule)
-      install(new LogicModule)
-    }
-  }
 
   def main(argv: Array[String]) {
-    val injector = Guice.createInjector(new RunnerModule)
-    val server = injector.getInstance(classOf[NetworkServer])
-    server.start
+    val app = new App{
+      def port = 9800
+    }
+    app.start
   }
 }

@@ -183,7 +183,8 @@ public class ServerIntegrationTests {
             super.configure();
             install(new ProtobufMessageSerializationModule());
             install(new LoggingModule());
-            install(Modules.override(new NetworkServerModule()).with(new NetworkServerExtension()));
+            install(Modules.override(new NetworkServerModule(9800)).
+                    with(new NetworkServerExtension()));
             install(new InputRingModule());
             install(new EchoLogicModule());
         }

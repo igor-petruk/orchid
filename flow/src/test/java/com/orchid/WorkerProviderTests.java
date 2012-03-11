@@ -41,7 +41,7 @@ public class WorkerProviderTests {
         @Override
         protected void configure() {
             super.configure();
-            install(Modules.override(new NetworkServerModule()).with(new Extension()));
+            install(Modules.override(new NetworkServerModule(9800)).with(new Extension()));
         }
     }
 }
