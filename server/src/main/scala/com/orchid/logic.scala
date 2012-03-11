@@ -19,13 +19,9 @@ class BusinessLogicEventHandler extends EventHandler[RingElement] {
   /* WTF ?!? */
   implicit def list2enum[L <: Enum[_],
       V <: MessageHandler{type MessageTypeToHandle=L}]
-      (list: List[V])
-      (implicit l:Manifest[L], v:Manifest[V])={
-        list.foldLeft(EnumMap.apply(l,v)){
-          (map, handler) =>{
-            val handlerMap = handler.handles.map(x=>(x, handler))
-            map ++ handlerMap
-        }
+      (list: List[V]) (implicit l:Manifest[L], v:Manifest[V])={
+    list.foldLeft(EnumMap.apply(l,v)){
+      (map, handler) => map ++ handler.handles.map(x=>(x, handler))
     }
   }
 
