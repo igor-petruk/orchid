@@ -6,7 +6,7 @@ import org.scalatest.{GivenWhenThen, Spec}
 import java.util.UUID
 import collection.immutable.HashMap
 import util.Random
-import com.orchid.tree.{FilesystemTreeImpl, Node, FilesystemTree}
+import com.orchid.tree.{FilesystemTreeComponent, Node, FilesystemTree}
 
 /**
  * User: Igor Petruk
@@ -17,8 +17,11 @@ import com.orchid.tree.{FilesystemTreeImpl, Node, FilesystemTree}
 @RunWith(classOf[JUnitRunner])
 class FilesystemTest extends Spec with GivenWhenThen{
 
+  class FilesystemTestComponent extends FilesystemTreeComponent
+  
   def fixture = new {
-    val filesystem:FilesystemTree = new FilesystemTreeImpl
+    val component = new FilesystemTestComponent
+    val filesystem = component.filesystem
   }
 
   describe("A filesystem "){

@@ -7,7 +7,7 @@ import com.orchid.messages.generated.Messages.{MessageType, MessageContainer}
 import com.orchid.ring.{ControlMessageType, EventType, RingElement}
 import com.orchid.flow.Flow
 import com.orchid.serialization.ProtobufMessageSerializer
-import com.orchid.{MessageHandler, HandlersComponent, ControlMessageHandler, DataMessageHandler}
+import com.orchid.{MessageHandler, HandlersComponentApi, ControlMessageHandler, DataMessageHandler}
 
 /**
  * User: Igor Petruk
@@ -52,14 +52,19 @@ class BusinessLogicEventHandler extends EventHandler[RingElement] {
   }
 }
 
-trait FlowConnectorComponent{
-  self: HandlersComponent =>
+trait FlowConnectorComponentApi{
+  val eventHandler:BusinessLogicEventHandler
+  val outputPublisher:OutputPublisher
+}
+
+trait FlowConnectorComponent extends FlowConnectorComponentApi{
+  self: HandlersComponentApi =>
   def port:Int
   val eventHandler = new BusinessLogicEventHandler
   val flow = new Flow(
-      new ProtobufMessageSerializer,
-      port,
-      eventHandler
-    )
+    new ProtobufMessageSerializer,
+    port,
+    eventHandler
+  )
   val outputPublisher:OutputPublisher = flow.getPublisher
 }

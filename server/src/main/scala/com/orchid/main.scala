@@ -1,8 +1,8 @@
 package com.orchid.main
 
-import com.orchid.tree.FilesystemTreeComponent
-import com.orchid.HandlersComponent
-import com.orchid.logic.FlowConnectorComponent
+import com.orchid.tree.{FilesystemTreeComponent, FilesystemTreeComponentApi}
+import com.orchid.{HandlersComponent}
+import com.orchid.logic.{FlowConnectorComponent, FlowConnectorComponentApi}
 
 /**
  * User: Igor Petruk
