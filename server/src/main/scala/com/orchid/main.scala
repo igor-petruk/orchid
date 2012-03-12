@@ -10,7 +10,7 @@ import com.orchid.logic.{FlowConnectorComponent, FlowConnectorComponentApi}
  * Time: 20:58
  */
 
-abstract class App extends FilesystemTreeComponent
+abstract class MainComponent extends FilesystemTreeComponent
                   with FlowConnectorComponent
                   with HandlersComponent{
   def start{
@@ -22,7 +22,7 @@ object Runner {
 
 
   def main(argv: Array[String]) {
-    val app = new App{
+    val app = new MainComponent{
       def port = 9800
     }
     app.start
