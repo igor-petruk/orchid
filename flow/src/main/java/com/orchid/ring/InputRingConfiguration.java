@@ -2,9 +2,12 @@ package com.orchid.ring;
 
 import com.lmax.disruptor.*;
 import com.lmax.disruptor.dsl.Disruptor;
+import com.lmax.disruptor.dsl.EventHandlerGroup;
 import com.orchid.logic.annotations.BusinessLogic;
 
 import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -17,7 +20,7 @@ public class InputRingConfiguration {
     RingBuffer<RingElement> ringBuffer;
     
     @Inject
-    public InputRingConfiguration(@BusinessLogic EventHandler<RingElement> businessLogic) {
+    public InputRingConfiguration(@BusinessLogic List<EventHandler<RingElement>> businessLogic) {
         ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
             int threadID;
             
@@ -34,7 +37,14 @@ public class InputRingConfiguration {
            //                new MultiThreadedLowContentionClaimStrategy(1024),
                             new MultiThreadedClaimStrategy(1024),
                             new BlockingWaitStrategy());
-        disruptor.handleEventsWith(businessLogic);
+        System.out.println(Arrays.toString(businessLogic.toArray()));
+        if (businessLogic.size()>0){
+            EventHandlerGroup<RingElement> eventHandlerGroup =
+                    disruptor.handleEventsWith(businessLogic.get(0));
+            for (int i = 1; i < businessLogic.size(); i++){
+                eventHandlerGroup = eventHandlerGroup.then(businessLogic.get(i));
+            }
+        }
         ringBuffer = disruptor.start();
     }
 

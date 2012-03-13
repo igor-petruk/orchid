@@ -3,6 +3,7 @@ package com.orchid;
 import com.google.guiceberry.GuiceBerryModule;
 import com.google.guiceberry.junit4.GuiceBerryRule;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.util.Modules;
 import com.lmax.disruptor.EventHandler;
@@ -30,6 +31,7 @@ import javax.inject.Singleton;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,10 +60,6 @@ public class ServerIntegrationTests {
     @Inject
     @ServerPort
     private int port;
-
-    @Inject
-    @BusinessLogic
-    EventHandler<RingElement> handler;
 
     AtomicLong atomicLong = new AtomicLong();
 
@@ -121,7 +119,9 @@ public class ServerIntegrationTests {
             DataInputStream dataInputStream = new DataInputStream(inputStream);
             byte[] buf = new byte[1024*128];
             int messagesCount = MESSAGES/SENDERS;
-            while(messagesCount>0){
+            while(messagesCount>1){
+                if (messagesCount%1000==0)
+                System.out.println("Left "+messagesCount);
                 int data = dataInputStream.readInt();
                 long leftSkipping = data;
                 while (leftSkipping!=0){
@@ -161,6 +161,7 @@ public class ServerIntegrationTests {
             s.get(i).get();
         }
         for (int i = 0; i < s.size(); i++){
+            System.out.println("Waiting for "+i);
             receivers.get(i).get();
         }
         System.out.println("All done");
@@ -193,16 +194,25 @@ public class ServerIntegrationTests {
     static class EchoLogicModule extends AbstractModule{
         @Override
         protected void configure() {
-            bind(new TypeLiteral<EventHandler<RingElement> >(){}).
-            annotatedWith(BusinessLogic.class).
-            to(EchoRespondingHandler.class).
-             in(Singleton.class);
+        }
+
+        @Provides
+        @BusinessLogic
+        @Singleton
+        @Inject
+        List<EventHandler<RingElement>> handlersList(OutputPublisher outputPublisher){
+            List<EventHandler<RingElement>> list = new ArrayList<EventHandler<RingElement>>();
+            list.add(new EchoRespondingHandler(outputPublisher));
+            return list;
         }
     }
     
     static class EchoRespondingHandler implements EventHandler<RingElement>{
-        @Inject
         OutputPublisher outputPublisher;
+
+        EchoRespondingHandler(OutputPublisher outputPublisher) {
+            this.outputPublisher = outputPublisher;
+        }
 
         @Override
         public void onEvent(RingElement event, long sequence, boolean endOfBatch) throws Exception {

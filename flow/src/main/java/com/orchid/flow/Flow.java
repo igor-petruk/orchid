@@ -21,33 +21,30 @@ import javax.inject.Singleton;
 public class Flow {
     FlowMessageSerializer<?> messageSerializer;
     int port;
-    EventHandler<RingElement> eventHandler;
+    EventHandler<RingElement> eventHandlers[];
 
     Injector injector;
-    OutputPublisher publisher;
 
     public Flow(final FlowMessageSerializer<?> messageSerializer,
                 final int port,
-                final EventHandler<RingElement> eventHandler) {
+                final EventHandler<RingElement>[] eventHandlers) {
         this.messageSerializer = messageSerializer;
         this.port = port;
-        this.eventHandler = eventHandler;
+        this.eventHandlers = eventHandlers;
 
         injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
                 install(new FlowModule(port));
-                install(new ParametrizedLogicModule(eventHandler));
+                install(new ParametrizedLogicModule(eventHandlers));
 
                 bind(FlowMessageSerializer.class).toInstance(messageSerializer);
             }
         });
-
-        publisher = injector.getInstance(Key.get(OutputPublisher.class));
-    }
+   }
 
     public OutputPublisher getPublisher() {
-        return publisher;
+        return injector.getInstance(Key.get(OutputPublisher.class));
     }
 
     public void start(){

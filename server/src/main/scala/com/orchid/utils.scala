@@ -6,6 +6,7 @@ import com.orchid.messages.generated.Messages.GeneralFileInfo
 import com.google.protobuf.ByteString
 import java.util.UUID
 import com.fasterxml.uuid.impl.UUIDUtil
+import com.orchid.MessageHandler
 
 object FileUtils{
   implicit def bs2uuid(bs:ByteString):UUID = UUIDUtil.uuid(bs.toByteArray)

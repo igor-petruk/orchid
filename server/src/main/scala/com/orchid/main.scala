@@ -1,8 +1,8 @@
 package com.orchid.main
 
-import com.orchid.tree.{FilesystemTreeComponent, FilesystemTreeComponentApi}
-import com.orchid.{HandlersComponent}
-import com.orchid.logic.{FlowConnectorComponent, FlowConnectorComponentApi}
+import com.orchid.tree.{FilesystemTreeComponent}
+import com.orchid.logic.{BusinessLogicComponent}
+import com.orchid.flow.FlowConnectorComponent
 
 /**
  * User: Igor Petruk
@@ -10,9 +10,20 @@ import com.orchid.logic.{FlowConnectorComponent, FlowConnectorComponentApi}
  * Time: 20:58
  */
 
-abstract class MainComponent extends FilesystemTreeComponent
-                  with FlowConnectorComponent
-                  with HandlersComponent{
+trait Other
+
+trait Parent{
+  def list:List[Int]
+}
+
+trait Child extends Parent{
+  self: Other=>
+  val list = List(2)
+}
+
+abstract class MainComponentBusinessLogic extends FilesystemTreeComponent
+                  with BusinessLogicComponent
+                  with FlowConnectorComponent{
   def start{
     flow.start()
   }
@@ -22,7 +33,7 @@ object Runner {
 
 
   def main(argv: Array[String]) {
-    val app = new MainComponent{
+    val app = new MainComponentBusinessLogic{
       def port = 9800
     }
     app.start
