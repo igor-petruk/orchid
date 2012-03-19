@@ -5,12 +5,15 @@ import collection._
 import annotation.tailrec
 import mutable.Ctrie
 import com.orchid.user.UserID
+import com.orchid.messages.generated.Messages.ErrorType
 
 /**
  * User: Igor Petruk
  * Date: 07.03.12
  * Time: 22:29
  */
+
+case class FilesystemError(errorType:ErrorType, description:Option[String]=None)
 
 case class Node(
   id:UUID,
@@ -27,7 +30,7 @@ trait FilesystemTree {
   def root:Node
   def file(path:String):Option[Node]
   def file(id:UUID):Option[Node]
-  def setFile(parent: String, child:Node):Unit
+  def setFile(parent: String, child:Node):Either[FilesystemError, Node]
   def discoverFile(id:UUID, peer: UserID):Boolean
 }
 
@@ -78,24 +81,36 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
       fileIter(root, if (path.isEmpty) List.empty else path.split('/').toList)
     }
 
-    def setFile(parent: String, child:Node){
-      def setFileAsChild(node:Node, names: List[String]):Option[Node]={
-        if (names.isEmpty)
-          Some(node.withChildren(node.children + (child.name->child)))
-        else
-          node.children.get(names.head) flatMap { oldChild=>
-            setFileAsChild(oldChild, names.tail) map {newChild=>
-              node.withChildren(node.children + (names.head->newChild))
-            }
+    def setFile(parent: String, child:Node):Either[FilesystemError,Node]={
+      def setFileAsChild(node:Node, names: List[String]):Either[FilesystemError,Node]={
+        if (names.isEmpty){
+          if (node.children.contains(child.name))
+            Left(FilesystemError(ErrorType.FILE_EXISTS))
+          else
+            Right(node.withChildren(node.children + (child.name->child)))
+        } else
+          node.children.get(names.head) match { 
+            case Some(oldChild)=>
+              setFileAsChild(oldChild, names.tail) match {
+                case Right(newChild)=> Right(node.withChildren(node.children + 
+                  (names.head->newChild)))
+                case error@Left(_)=>error
+              }
+            case None=>Left(
+              FilesystemError(ErrorType.FILE_NOT_FOUND)
+            )
           }
       }
 
       val pathList = if (parent.isEmpty) List.empty
       else parent.split('/').toList
 
-      for (newRoot <- setFileAsChild(root, pathList)){
-        nodesById+=(child.id->NodePeers(child, List()))
-        rootNode = newRoot
+      setFileAsChild(root, pathList) match {
+        case Right(newRoot)=>
+          nodesById+=(child.id->NodePeers(child, List()))
+          rootNode = newRoot
+          Right(child)
+        case error@Left(_) => error
       }
     }
   }

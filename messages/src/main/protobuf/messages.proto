@@ -125,6 +125,16 @@ message Echo{
     optional int32 integerValue = 2;
 }
 
+enum ErrorType{
+    FILE_NOT_FOUND = 1;
+    FILE_EXISTS = 2;
+}
+
+message Error{
+    required ErrorType errorType = 1;
+    optional string description = 2;
+}
+
 message MessageContainer{
 	
     required MessageType messageType = 1;
@@ -154,4 +164,6 @@ message MessageContainer{
     optional MakeDirectory makeDirectory = 17;    
 
     optional Echo echo = 18;
+
+    optional Error error = 19;
 }

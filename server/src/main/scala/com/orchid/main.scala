@@ -2,7 +2,8 @@ package com.orchid.main
 
 import com.orchid.tree.{FilesystemTreeComponent}
 import com.orchid.logic.{BusinessLogicComponent}
-import com.orchid.flow.FlowConnectorComponent
+import com.orchid.journal.JournalComponent
+import com.orchid.flow.{HandlersComponent, FlowConnectorComponent}
 
 /**
  * User: Igor Petruk
@@ -10,19 +11,10 @@ import com.orchid.flow.FlowConnectorComponent
  * Time: 20:58
  */
 
-trait Other
-
-trait Parent{
-  def list:List[Int]
-}
-
-trait Child extends Parent{
-  self: Other=>
-  val list = List(2)
-}
-
 abstract class MainComponentBusinessLogic extends FilesystemTreeComponent
+                  with JournalComponent
                   with BusinessLogicComponent
+                  with HandlersComponent
                   with FlowConnectorComponent{
   def start{
     flow.start()

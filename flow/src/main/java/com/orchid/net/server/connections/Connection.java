@@ -80,8 +80,8 @@ public class Connection {
 
     public void dispose(){
         disposed = true;
-        bufferAggerator.close();
-        expandingBuffer.close();
+        if (bufferAggerator!=null) bufferAggerator.close();
+        if (expandingBuffer!=null) expandingBuffer.close();
     }
 
     public boolean isDisposed() {

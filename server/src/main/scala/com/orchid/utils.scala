@@ -1,18 +1,30 @@
 package com.orchid.utils
 
 import annotation.tailrec
-import com.orchid.tree.Node
 import com.orchid.messages.generated.Messages.GeneralFileInfo
 import com.google.protobuf.ByteString
 import java.util.UUID
 import com.fasterxml.uuid.impl.UUIDUtil
-import com.orchid.MessageHandler
+import com.orchid.tree.{FilesystemError, Node}
+import com.orchid.messages.generated.Messages
 
-object FileUtils{
+trait ErrorConversions{
+  implicit def error2msg(errorItem:FilesystemError)={
+    val error = Messages.Error.newBuilder
+    error.setErrorType(errorItem.errorType)
+    for (description<-errorItem.description){
+      error.setDescription(description)
+    }
+    error
+  }
+}
+
+trait UUIDConversions{
   implicit def bs2uuid(bs:ByteString):UUID = UUIDUtil.uuid(bs.toByteArray)
-
   implicit def uuid2bs(uuid:UUID):ByteString = ByteString.copyFrom(UUIDUtil.asByteArray(uuid))
+}
 
+trait FileUtils extends UUIDConversions{
   def splitPath(path:String)={
     val pathAndDir = path.splitAt(path.lastIndexOf("/"))
     (pathAndDir._1,

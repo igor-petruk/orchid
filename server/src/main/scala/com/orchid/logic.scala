@@ -4,6 +4,7 @@ import com.orchid._
 import flow.FlowConnectorComponentApi
 import java.util.UUID
 
+import messages.generated.Messages
 import messages.generated.Messages.MessageType._
 import messages.generated.Messages.{FileInfoResponse, MessageContainer, MessageType}
 import net.server.workers.output.OutputPublisher
@@ -11,8 +12,9 @@ import collection.immutable.HashMap
 import ring.ControlMessageType._
 import ring.{EventType, ControlMessageType, RingElement}
 import tree.{FilesystemTreeComponentApi,Node,FilesystemTree}
-import com.orchid.utils.EnumMap
 import com.lmax.disruptor.EventHandler
+import ch.qos.logback.core.util.FileUtil
+import com.orchid.utils.{ErrorConversions, FileUtils, UUIDConversions, EnumMap}
 
 /**
  * User: Igor Petruk
@@ -114,10 +116,8 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
 
     class MakeDirectoryHandlerData(filesystem:FilesystemTree,
                                    publisher:OutputPublisher)
-      extends DataMessageHandler{
+      extends DataMessageHandler with FileUtils with ErrorConversions{
       def handles = List(MAKE_DIRECTORY)
-
-      import com.orchid.utils.FileUtils._
 
       def handle(event: RingElement){
         val message = extractMessage(event)
@@ -125,11 +125,17 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
         val fileId:UUID = makeDirectory.getFileId
         val pathAndDir = splitPath(makeDirectory.getPath)
         val dir = Node(fileId, pathAndDir._2, true, 0, HashMap.empty)
-        filesystem.setFile(pathAndDir._1, dir)
+        val result = filesystem.setFile(pathAndDir._1, dir)
 
         val response = createMessage(FILE_INFO_RESPONSE)
-        val info = buildFileInfo(makeDirectory.getPath, dir)
-        response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
+        result match {
+          case Left(error)=>
+            response.setError(error)
+          case Right(node)=>{
+            val info = buildFileInfo(makeDirectory.getPath, dir)
+            response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
+          }
+        }
         response.setCookie(message.getCookie)
         publisher.send(response.build(), event.getUserID)
       }
@@ -137,10 +143,8 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
 
     class CreateFileHandlerData(filesystem:FilesystemTree,
                                 publisher:OutputPublisher)
-      extends DataMessageHandler{
+      extends DataMessageHandler with FileUtils{
       def handles = List(CREATE_FILE)
-
-      import com.orchid.utils.FileUtils._
 
       def handle(event: RingElement){
         val message = extractMessage(event)
@@ -161,10 +165,8 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
 
     class FileInfoRequestHandlerData (filesystem:FilesystemTree,
                                       publisher:OutputPublisher)
-      extends DataMessageHandler{
+      extends DataMessageHandler with FileUtils{
       def handles = List(FILE_INFO_REQUEST)
-
-      import com.orchid.utils.FileUtils._
 
       def handle(event: RingElement){
         val message = extractMessage(event)
@@ -194,10 +196,9 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
     }
 
     class DiscoverFileHandlerData (filesystem:FilesystemTree)
-      extends DataMessageHandler{
+      extends DataMessageHandler with UUIDConversions{
       def handles = List(DISCOVER_FILE)
 
-      import com.orchid.utils.FileUtils._
       import scala.collection.JavaConversions._
 
       def handle(event: RingElement){
