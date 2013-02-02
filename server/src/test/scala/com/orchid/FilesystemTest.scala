@@ -6,7 +6,7 @@ import org.scalatest.{GivenWhenThen, Spec}
 import java.util.UUID
 import collection.immutable.HashMap
 import util.Random
-import com.orchid.tree.{FilesystemTreeComponent, Node, FilesystemTree}
+import com.orchid.tree.{FilesystemError, FilesystemTreeComponent, Node, FilesystemTree}
 
 /**
  * User: Igor Petruk
@@ -23,7 +23,7 @@ class FilesystemTest extends Spec with GivenWhenThen{
     val component = new FilesystemTestComponent
     val filesystem = component.filesystem
   }
-
+ /*
   describe("A filesystem "){
     it ("should be empty at the beginning"){
       given("empty filesystem")
@@ -76,44 +76,55 @@ class FilesystemTest extends Spec with GivenWhenThen{
       assertFile("file1/file2/file4/file5/")
     }
   }
+   */
+  describe("A benchmark "){
+    it ("should be awesome"){
+      benchmark
+    }
+  }
 
   def benchmark{
     val f = fixture
     val file5 = Node(new UUID(4,4),"file5", true, 0,HashMap());
-    var s = "file1"
+    var s = ""
     val rnd = new Random
     var filesCreated = 0;
     val uuid = new UUID(4,4)
+    var lastCreated: Either[FilesystemError,Node] = null
     for(i <- -2 to 100){
       val start = System.currentTimeMillis()
       val times = 500;
       for (j<-1 until times){
         val file = Node(uuid,"file"+rnd.nextInt, true, 0, HashMap.empty);
-        f.filesystem.setFile(s, file)
+        lastCreated=f.filesystem.setFile(s, file)
+//        println(s+"->"+file+":"+f.filesystem.setFile(s, file))
         filesCreated+=1
       }
       f.filesystem.setFile(s, file5)
+//      println(s+"->"+file5+":"+f.filesystem.setFile(s, file5))
       filesCreated+=1
       val time:Double = System.currentTimeMillis()-start
       if (i%10==0)println(filesCreated+" "+i+" "+times/time*1000)
       s+="/"+file5.name
     }
-    s = "file1"
+    println(lastCreated)
+    s = ""
 
     for(i <- -2 to 200000){
       val start = System.currentTimeMillis()
       val times = 500;
       for (j<-1 until times){
         val file = Node(uuid,"file"+rnd.nextInt, true,0, HashMap.empty);
-        f.filesystem.setFile(s, file)
+        lastCreated=f.filesystem.setFile(s, file)
         filesCreated+=1
       }
-      f.filesystem.setFile(s, file5)
+      lastCreated=f.filesystem.setFile(s, file5)
       filesCreated+=1
       val time:Double = System.currentTimeMillis()-start
-      if (i%10==0)println(filesCreated+" "+i+" "+times/time*1000)
+      if (i%10==0){
+        println(filesCreated+" "+i+" "+times/time*1000+" "+lastCreated)
+      }
       s+="/"+file5.name
     }
-    while(true){}
   }
 }

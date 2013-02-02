@@ -3,9 +3,9 @@ package com.orchid.tree
 import java.util.UUID
 import collection._
 import annotation.tailrec
-import mutable.Ctrie
 import com.orchid.user.UserID
 import com.orchid.messages.generated.Messages.ErrorType
+import concurrent.TrieMap
 
 /**
  * User: Igor Petruk
@@ -47,7 +47,7 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
     var rootNode:Node = Node(new UUID(0,0),"ROOT",true, 0,
       immutable.HashMap[String, Node]())
 
-    val nodesById:mutable.Map[UUID, NodePeers]= Ctrie.empty
+    val nodesById:mutable.Map[UUID, NodePeers]= TrieMap.empty
 
     def root = rootNode
 
@@ -103,7 +103,7 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
       }
 
       val pathList = if (parent.isEmpty) List.empty
-      else parent.split('/').toList
+      else parent.split('/').filter(!_.isEmpty).toList
 
       setFileAsChild(root, pathList) match {
         case Right(newRoot)=>
