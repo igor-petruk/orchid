@@ -32,7 +32,7 @@
             <plugin>
                 <groupId>com.github.igor-petruk.protobuf</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.2-SNAPSHOT</version>
+                <version>0.6.2</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
