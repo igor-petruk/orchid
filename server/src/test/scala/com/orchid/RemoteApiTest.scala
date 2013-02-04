@@ -20,7 +20,7 @@ class RemoteApiTest extends FunSpec with GivenWhenThen with ServerFixtureSupport
 
   def fixture = new {
     startMemoryOnlyServer
-    val api = new TestApi("localhost",9800)
+    val api = new TestApi("localhost",19800)
   }
 
   describe("Remote API interaction"){

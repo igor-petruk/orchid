@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -56,7 +57,7 @@ public class SelectorAccepter implements ConnectionAccepter, Runnable{
             serverSocketChannel.configureBlocking(false);
             while (true) {
                 try {
-                    serverSocketChannel.socket().bind(new InetSocketAddress(port));
+                    serverSocketChannel.socket().bind(new InetSocketAddress(InetAddress.getByName(System.getenv("JENKINS_HOST")),port));
                     break;
                 } catch (IOException e) {
                     logger.info("Retrying with port {}",port);

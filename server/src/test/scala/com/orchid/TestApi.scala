@@ -43,7 +43,7 @@ class MemoryOnlyServerFixture extends FilesystemTreeComponent
     flow.start()
   }
   
-  def port = 9800
+  def port = 19800
 }
 
 trait ServerFixtureSupport{
