@@ -26,6 +26,7 @@ public class Flow {
     Injector injector;
 
     public Flow(final FlowMessageSerializer<?> messageSerializer,
+                final String host,
                 final int port,
                 final EventHandler<RingElement>[] eventHandlers) {
         this.messageSerializer = messageSerializer;
@@ -35,7 +36,7 @@ public class Flow {
         injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                install(new FlowModule(port));
+                install(new FlowModule(host,port));
                 install(new ParametrizedLogicModule(eventHandlers));
 
                 bind(FlowMessageSerializer.class).toInstance(messageSerializer);

@@ -26,6 +26,7 @@ object Runner {
 
   def main(argv: Array[String]) {
     val app = new MainComponentBusinessLogic{
+      def host = "localhost"
       def port = 9800
     }
     app.start

@@ -1,5 +1,6 @@
 package com.orchid.net.server.accepter.impl;
 
+import com.orchid.net.server.annotations.ServerHost;
 import com.orchid.net.server.annotations.ServerPort;
 import com.orchid.net.server.connections.Connection;
 import com.orchid.net.server.exceptions.NetworkException;
@@ -37,6 +38,10 @@ public class SelectorAccepter implements ConnectionAccepter, Runnable{
     Selector serverSelector;
 
     @Inject
+    @ServerHost
+    String host;
+
+    @Inject
     @ServerPort
     int port;
 
@@ -57,7 +62,7 @@ public class SelectorAccepter implements ConnectionAccepter, Runnable{
             serverSocketChannel.configureBlocking(false);
             while (true) {
                 try {
-                    serverSocketChannel.socket().bind(new InetSocketAddress(InetAddress.getByName(System.getenv("JENKINS_HOST")),port));
+                    serverSocketChannel.socket().bind(new InetSocketAddress(host,port));
                     break;
                 } catch (IOException e) {
                     logger.info("Retrying with port {}",port);
@@ -66,7 +71,7 @@ public class SelectorAccepter implements ConnectionAccepter, Runnable{
                 }
             }
 
-            logger.info(MessageFormat.format("Started server on port {0}", port));
+            logger.info(MessageFormat.format("Started server on {0}:{1}",host, port));
             serverSelector = Selector.open();
             serverSocketChannel.register(serverSelector, SelectionKey.OP_ACCEPT);
             thread = new Thread(this);

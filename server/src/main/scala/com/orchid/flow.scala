@@ -35,10 +35,12 @@ trait HandlersComponent extends HandlersComponentApi{
 
 trait FlowConnectorComponent extends FlowConnectorComponentApi{
   self: HandlersComponentApi=>
+  def host:String
   def port:Int
 
   val flow = new Flow(
     new ProtobufMessageSerializer,
+    host,
     port,
     handlers 
   )

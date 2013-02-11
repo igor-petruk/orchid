@@ -7,7 +7,7 @@ import org.junit.Assert._
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSpec, fixture, GivenWhenThen, Spec}
 import org.junit.runner.RunWith
-import com.orchid.test.{ServerFixtureSupport, TestFilesystemException, TestApi}
+import com.orchid.test.{EnvironmentVariableSettings, ServerFixtureSupport, TestFilesystemException, TestApi}
 
 /**
  * User: Igor Petruk
@@ -16,11 +16,11 @@ import com.orchid.test.{ServerFixtureSupport, TestFilesystemException, TestApi}
  */
 
 @RunWith(classOf[JUnitRunner])
-class RemoteApiTest extends FunSpec with GivenWhenThen with ServerFixtureSupport{
+class RemoteApiTest extends FunSpec with GivenWhenThen with ServerFixtureSupport with EnvironmentVariableSettings{
 
   def fixture = new {
     startMemoryOnlyServer
-    val api = new TestApi("localhost",19800)
+    val api = new TestApi(host,port)
   }
 
   describe("Remote API interaction"){

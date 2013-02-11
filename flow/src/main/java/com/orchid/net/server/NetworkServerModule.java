@@ -12,16 +12,18 @@ import com.orchid.net.streams.BufferPoolModule;
  * Time: 7:30
  */
 public class NetworkServerModule extends AbstractModule{
+    String host;
     int port;
 
-    public NetworkServerModule(int port) {
+    public NetworkServerModule(String host, int port) {
+        this.host = host;
         this.port = port;
     }
 
     @Override
     protected void configure() {
         install(new BufferPoolModule());
-        install(new MainServerModule(port));
+        install(new MainServerModule(host, port));
         install(new AccepterModule());
         install(new WorkersModule());
     }

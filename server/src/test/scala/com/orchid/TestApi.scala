@@ -38,12 +38,20 @@ trait TestHandlersComponent extends HandlersComponentApi{
 class MemoryOnlyServerFixture extends FilesystemTreeComponent
   with BusinessLogicComponent
   with TestHandlersComponent
-  with FlowConnectorComponent{
+  with FlowConnectorComponent
+  with EnvironmentVariableSettings{
   def start{
     flow.start()
   }
-  
-  def port = 19800
+}
+
+trait EnvironmentVariableSettings{
+  private[this] def getOption(name:String) = Option(System.getenv(name))
+    .orElse(Option(System.getProperty(name)))
+
+  def host: String = getOption("ORCHID_HOST").getOrElse("localhost")
+
+  def port = Integer.parseInt(getOption("ORCHID_PORT").getOrElse("9800"))
 }
 
 trait ServerFixtureSupport{

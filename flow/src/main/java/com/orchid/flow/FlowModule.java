@@ -13,16 +13,18 @@ import com.orchid.ring.RingElement;
  * Time: 16:20
  */
 public class FlowModule extends AbstractModule{
+    String host;
     int port;
 
-    public FlowModule(int port) {
+    public FlowModule(String host, int port) {
+        this.host = host;
         this.port = port;
     }
 
     @Override
     protected void configure() {
         install(new LoggingModule());
-        install(new NetworkServerModule(port));
+        install(new NetworkServerModule(host,port));
         install(new InputRingModule());
     }
 }
