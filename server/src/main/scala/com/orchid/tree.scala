@@ -15,15 +15,22 @@ import concurrent.TrieMap
 
 case class FilesystemError(errorType:ErrorType, description:Option[String]=None)
 
+object Node{
+  val rootNodeUUID = new UUID(0,0)
+}
+
 case class Node(
   id:UUID,
   name:String,
   isDir:Boolean,
   size:Long,
-  children:Map[String, Node]){
+  children:Map[String, Node],
+  childrenCount:Int=1){
 
-  def withChildren(newChildren: Map[String, Node])=
-    Node(id, name, isDir, size, newChildren)
+  def withChildren(newChildren: Map[String, Node],childrenCount:Int)=
+    Node(id, name, isDir, size, newChildren,childrenCount)
+
+  def isRoot = id == Node.rootNodeUUID
 }
 
 trait FilesystemTree {
@@ -44,8 +51,9 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
   case class NodePeers(node:Node, peers:List[UserID])
 
   class FilesystemTreeImpl extends FilesystemTree{
-    var rootNode:Node = Node(new UUID(0,0),"ROOT",true, 0,
-      immutable.HashMap[String, Node]())
+
+    var rootNode:Node = Node(Node.rootNodeUUID,"ROOT",true, 0,
+      immutable.HashMap[String, Node](),0)
 
     val nodesById:mutable.Map[UUID, NodePeers]= TrieMap.empty
 
@@ -59,6 +67,15 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
         }
         case _ => false
       }
+    }
+
+    def dumpTree{
+      def dumpNode(offset:String, node:Node){
+        val dirName = (if (node.isDir) "[%s]" else "%s").format(node.name)
+        println("%s%s\t\t\t%d".format(offset,dirName,node.childrenCount))
+        node.children.values.foreach(child=>dumpNode(offset+"  ",child))
+      }
+      dumpNode("",root)
     }
 
     def file(id:UUID)= nodesById.get(id).map(_.node)
@@ -87,13 +104,13 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
           if (node.children.contains(child.name))
             Left(FilesystemError(ErrorType.FILE_EXISTS))
           else
-            Right(node.withChildren(node.children + (child.name->child)))
+            Right(node.withChildren(node.children + (child.name->child), node.childrenCount+child.childrenCount))
         } else
           node.children.get(names.head) match { 
             case Some(oldChild)=>
               setFileAsChild(oldChild, names.tail) match {
                 case Right(newChild)=> Right(node.withChildren(node.children + 
-                  (names.head->newChild)))
+                  (names.head->newChild),node.childrenCount+newChild.childrenCount-oldChild.childrenCount))
                 case error@Left(_)=>error
               }
             case None=>Left(

@@ -31,7 +31,7 @@ class RemoteApiTest extends FunSpec with GivenWhenThen with ServerFixtureSupport
       val dir1 = api.makeDir("dir1")
       Then("it should be created")
       dir1 match {
-        case Some(Node(_,"dir1",true,0,_))=>
+        case Some(Node(_,"dir1",true,0,_,_))=>
         case _=> fail()
       }
     }
@@ -41,7 +41,7 @@ class RemoteApiTest extends FunSpec with GivenWhenThen with ServerFixtureSupport
       val dir2 = api.makeDir("dir1/dir2")
       Then("it should be created")
       dir2 match {
-        case Some(Node(_,"dir1/dir2",true,0,_))=>
+        case Some(Node(_,"dir1/dir2",true,0,_,_))=>
         case _=> fail()
       }
     }
