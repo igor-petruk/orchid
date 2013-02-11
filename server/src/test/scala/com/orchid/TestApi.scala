@@ -46,8 +46,8 @@ class MemoryOnlyServerFixture extends FilesystemTreeComponent
 }
 
 trait EnvironmentVariableSettings{
-  private[this] def getOption(name:String) = Option(System.getenv(name))
-    .orElse(Option(System.getProperty(name)))
+  private[this] def getOption(name:String) = Option(System.getProperty(name))
+    .orElse(Option(System.getenv(name)))
 
   def host: String = getOption("ORCHID_HOST").getOrElse("localhost")
 
