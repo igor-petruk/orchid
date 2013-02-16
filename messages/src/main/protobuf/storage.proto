@@ -1,0 +1,20 @@
+package com.orchid.treeprocessing.storage.generated;
+
+option optimize_for=SPEED;
+
+message JointPoint{
+    required bytes id = 1;
+}
+
+message SerializedNode{
+    required bytes id = 1;
+    required string name = 2;
+    required bool isDir = 3;
+    required int64 size = 4;
+    required int32 immediateChildrenCount = 5;
+}
+
+message Command{
+    optional JointPoint jointPoint = 1;
+    optional SerializedNode serializedNode = 2;
+}

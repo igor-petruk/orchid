@@ -69,6 +69,8 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
       }
     }
 
+
+
     def dumpTree{
       def dumpNode(offset:String, node:Node){
         val dirName = (if (node.isDir) "[%s]" else "%s").format(node.name)
