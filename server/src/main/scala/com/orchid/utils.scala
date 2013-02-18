@@ -7,6 +7,9 @@ import java.util.UUID
 import com.fasterxml.uuid.impl.UUIDUtil
 import com.orchid.tree.{FilesystemError, Node}
 import com.orchid.messages.generated.Messages
+import xml.PrettyPrinter
+import java.io.FileOutputStream
+import java.nio.channels.Channels
 
 trait ErrorConversions{
   implicit def error2msg(errorItem:FilesystemError)={
@@ -16,6 +19,24 @@ trait ErrorConversions{
       error.setDescription(description)
     }
     error
+  }
+}
+
+trait XMLUtils{
+
+  implicit class nodePimp(node:scala.xml.Node){
+    def savePretty(filename:String){
+      val pp = new PrettyPrinter(80, 2)
+      val fos = new FileOutputStream(filename)
+      val writer = Channels.newWriter(fos.getChannel(), "UTF-8")
+
+      try {
+        writer.write("<?xml version='1.0' encoding='UTF-8'?>\n")
+        writer.write(pp.format(node))
+      } finally {
+        writer.close()
+      }
+    }
   }
 }
 

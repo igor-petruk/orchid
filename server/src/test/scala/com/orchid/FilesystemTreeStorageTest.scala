@@ -41,7 +41,7 @@ class FilesystemTreeStorageTest extends FunSpec with GivenWhenThen{
     }
   }
 
-  def prepareFolder{
+  def prepareFolder(dir:String){
     def delete(f:File) {
       if (f.isDirectory) {
         for (c<- f.listFiles)
@@ -49,7 +49,6 @@ class FilesystemTreeStorageTest extends FunSpec with GivenWhenThen{
       }
       !f.delete()
     }
-    val dir = "./fs/";
     val dirFile = new File(dir);
     delete(dirFile)
     dirFile.mkdirs()
@@ -59,10 +58,11 @@ class FilesystemTreeStorageTest extends FunSpec with GivenWhenThen{
     it ("should be empty at the beginning"){
       Given("generated filesystem")
       val f = fixture
-      prepareFolder
+      prepareFolder("./fs")
       generateTree(f.filesystem)
       println("Generated "+f.filesystem.root.childrenCount)
       f.component.treeSerializer.serialize(f.filesystem)
+      Thread.sleep(12000)
     }
   }
 }
