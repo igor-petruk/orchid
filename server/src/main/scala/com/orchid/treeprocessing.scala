@@ -12,21 +12,67 @@ import akka.actor.{ActorRef, Props, Actor}
 import akka.event.Logging
 import scala.Some
 import com.orchid.utils.{XMLUtils, UUIDConversions}
+import akka.pattern.ask
+import concurrent.{ExecutionContext, Future}
+import akka.util.Timeout
+
+import scala.concurrent.duration._
+
+import ExecutionContext.Implicits.global
 
 trait TreeSerialization{
-  def serialize(filesystem:FilesystemTree)
+  def serialize(filesystem:FilesystemTree, chunksCount:Int):Future[SerializationComplete]
 }
 
 trait TreeSerializationComponentApi{
   def treeSerializer:TreeSerialization
 }
 
-case class ChunkMetadata(provides:UUID, depends:Set[UUID])
+trait TreeDeserialization{
+  def deserialize: Future[Node]
+}
 
-case class StartSerialization(folder:String, filesystem:FilesystemTree,
-                              numberOfParts:Int, originalSender: Option[ActorRef] = None)
-case class SerializeChunk(folder:String,topNode:Node, previousJointPointsSnapshot:Set[UUID])
-case class SerializationComplete()
+trait TreeDeserializationComponentApi{
+  def treeDeserializer:TreeDeserialization
+}
+
+trait TreeSerializationComponent
+  extends TreeSerializationComponentApi
+  with TreeDeserializationComponentApi
+{ self: AkkaActorsComponentApi=>
+  val dir = "./fs/"
+  implicit val timeout = new Timeout(5 minutes)
+
+  val treeSerializer:TreeSerialization = new TreeSerialization {
+    private[this] lazy val serializationDispatcher = actorSystem.actorOf(Props[TreeSerializationDispatcherActor])
+
+    def serialize(filesystem: FilesystemTree, chunksCount:Int):Future[SerializationComplete] = {
+      serializationDispatcher ? StartSerialization(dir, filesystem, chunksCount)map{
+        case s: SerializationComplete => s
+        case _ => ???
+      }
+    }
+  }
+
+  val treeDeserializer:TreeDeserialization = new TreeDeserialization {
+    private[this] lazy val serializationDispatcher = actorSystem.actorOf(Props[TreeSerializationDispatcherActor])
+
+    def deserialize = (serializationDispatcher ? DeserializeTree(dir)).map {
+      case n:Node => n
+      case _ => ???
+    }
+  }
+}
+
+abstract sealed trait DeserializationMessage
+case class DeserializeTree(folder:String, originalSender: Option[ActorRef] = None)
+
+abstract sealed trait SerializationMessage
+case class ChunkMetadata(provides:UUID, depends:Set[UUID]) extends SerializationMessage
+case class StartSerialization(folder:String, filesystem:FilesystemTree, numberOfParts:Int,
+         originalSender: Option[ActorRef] = None) extends SerializationMessage
+case class SerializeChunk(folder:String,topNode:Node, previousJointPointsSnapshot:Set[UUID]) extends SerializationMessage
+case class SerializationComplete() extends SerializationMessage
 
 class ChunkProcessorActor extends Actor with UUIDConversions{
 
@@ -36,9 +82,9 @@ class ChunkProcessorActor extends Actor with UUIDConversions{
       val chunkDir = new File(folder+topNode.id)
       chunkDir.mkdirs()
       val binaryFile = chunkDir.getAbsolutePath+File.separatorChar+"bin"
-      val textFile = chunkDir.getAbsolutePath+File.separatorChar+"log.txt"
+      //val textFile = chunkDir.getAbsolutePath+File.separatorChar+"log.txt"
       val binaryFileOutputStream = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(binaryFile)))
-      val logWriter = new PrintWriter(new BufferedOutputStream(new FileOutputStream(textFile)))
+      //val logWriter = new PrintWriter(new BufferedOutputStream(new FileOutputStream(textFile)))
       def walk(node:Node){
         if (!previousJointPointsSnapshot.contains(node.id)){
           for (children<-node.children.values){
@@ -52,18 +98,18 @@ class ChunkProcessorActor extends Actor with UUIDConversions{
             .setImmediateChildrenCount(node.children.size)
           val command = Command.newBuilder().setSerializedNode(serializedNode).build()
           command.writeTo(binaryFileOutputStream)
-          logWriter.println(command.getSerializedSize+" bytes: " + command)
+        //  logWriter.println(command.getSerializedSize+" bytes: " + command)
         }else{
           met += node.id
           val jp = JointPoint.newBuilder().setId(uuid2bs(node.id))
           val command = Command.newBuilder().setJointPoint(jp).build()
           command.writeDelimitedTo(binaryFileOutputStream)
-          logWriter.println(command.getSerializedSize+" bytes: " + command)
+        //  logWriter.println(command.getSerializedSize+" bytes: " + command)
         }
       }
       walk(topNode)
       binaryFileOutputStream.close()
-      logWriter.close()
+      //logWriter.close()
       sender ! ChunkMetadata(topNode.id, met.toSet)
       context.stop(self)
     }
@@ -94,8 +140,13 @@ class TreeSerializationProcessActor extends Actor with XMLUtils{
         total
       }
     }
-
-    walk(filesystem.root)
+    if (numberOfParts==1){
+      val chunkProcessingActor = context.actorOf(Props[ChunkProcessorActor]())
+      chunkProcessingActor ! SerializeChunk(folder, filesystem.root, Set())
+      totalChunks = 1
+    }else{
+      walk(filesystem.root)
+    }
   }
 
   def receive ={
@@ -107,8 +158,8 @@ class TreeSerializationProcessActor extends Actor with XMLUtils{
     case msg@ChunkMetadata(provides, depends)=>{
       chunks += msg
       if (chunks.size == totalChunks){
-        whoToRespond ! SerializationComplete()
         storeMetadata
+        whoToRespond ! SerializationComplete()
         context.stop(self)
       }
     }
@@ -130,30 +181,19 @@ class TreeSerializationProcessActor extends Actor with XMLUtils{
 }
 
 class TreeSerializationDispatcherActor extends Actor{
-  val processorActors = mutable.Set[ActorRef]()
+  val processorActors = mutable.Map[ActorRef, ActorRef]()
   val log = Logging(context.system, this)
 
   def receive = {
     case msg@StartSerialization(folder, fs, numberOfParts, None)=> {
       val processActor = context.actorOf(Props[TreeSerializationProcessActor])
-      processorActors.add(processActor)
+      processorActors.put(processActor, context.sender)
       processActor ! msg.copy(originalSender = Some(context.self))
     }
-    case SerializationComplete() =>{
-      println(sender+" completed serialization")
-    }
-  }
-}
-
-trait TreeSerializationComponent extends TreeSerializationComponentApi{ self: AkkaActorsComponentApi=>
-  val treeSerializer:TreeSerialization = new TreeSerialization {
-    private[this] lazy val serializationDispatcher = actorSystem.actorOf(Props[TreeSerializationDispatcherActor])
-
-    val dir = "./fs/"
-    val chunksCount = 8
-
-    def serialize(filesystem: FilesystemTree) {
-      serializationDispatcher ! StartSerialization(dir, filesystem, chunksCount)
+    case msg:SerializationComplete =>{
+      val originalRequester = processorActors(sender)
+      processorActors.remove(sender)
+      originalRequester ! msg
     }
   }
 }
