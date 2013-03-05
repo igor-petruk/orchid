@@ -12,6 +12,7 @@ import com.orchid.actors.AkkaActorsComponent
 import concurrent.{ExecutionContext, Await}
 import concurrent.duration.Duration
 import ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
 class FilesystemTreeStorageTest extends FunSpec with GivenWhenThen{
@@ -28,7 +29,7 @@ class FilesystemTreeStorageTest extends FunSpec with GivenWhenThen{
     val rnd = new Random()
     def generateChildren(nodePath:String, level:Int){
       if (level>0){
-        for (i<-0 until (2+rnd.nextInt(7))){
+        for (i<-0 until (2+rnd.nextInt(6))){
           val dirName="dir"+i
           val node = Node(UUID.randomUUID(), dirName, true, 0, Map())
           filesystem.setFile(nodePath,node)
@@ -65,6 +66,7 @@ class FilesystemTreeStorageTest extends FunSpec with GivenWhenThen{
       generateTree(f.filesystem)
       println("Generated "+f.filesystem.root.childrenCount)
 
+
       def testFor(chunkCount:Int){
         prepareFolder("./fs")
         val start = System.currentTimeMillis()
@@ -73,8 +75,16 @@ class FilesystemTreeStorageTest extends FunSpec with GivenWhenThen{
           case _ => println("Completed %d chunks for %d ms".format(chunkCount, System.currentTimeMillis()-start))
         }
         Await.ready(result, Duration.Inf)
+
+        val dStart = System.currentTimeMillis()
+        val treeResult = f.component.treeDeserializer.deserialize
+        treeResult.onSuccess{
+          case _ => println("Deserialization completed %d chunks for %d ms".format(chunkCount, System.currentTimeMillis()-dStart))
+        }
+        Await.ready(treeResult, Duration.Inf)
+
       }
-      for (i<-1 to 4; chunks<-List(1,2,4,8,16,32,128)){
+      for (i<-1 to 4; chunks<-List(1,4,8,16,32,128)){
         testFor(chunks)
       }
     }
