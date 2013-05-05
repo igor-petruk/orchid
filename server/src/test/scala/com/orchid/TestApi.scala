@@ -14,6 +14,7 @@ import com.orchid.logic.{BusinessLogicComponentApi, BusinessLogicHandlersCompone
 import com.orchid.journal.{JournalComponentApi, JournalComponent}
 import com.lmax.disruptor.EventHandler
 import com.orchid.ring.RingElement
+import com.orchid.connection.ConnectionComponent
 
 /**
  * User: Igor Petruk
@@ -39,7 +40,8 @@ class MemoryOnlyServerFixture extends FilesystemTreeComponent
   with BusinessLogicComponent
   with TestHandlersComponent
   with FlowConnectorComponent
-  with EnvironmentVariableSettings{
+  with EnvironmentVariableSettings
+  with ConnectionComponent{
   def start{
     flow.start()
   }

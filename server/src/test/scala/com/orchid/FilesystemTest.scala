@@ -7,6 +7,7 @@ import java.util.UUID
 import collection.immutable.HashMap
 import util.Random
 import com.orchid.tree.{FilesystemError, FilesystemTreeComponent, Node, FilesystemTree}
+import com.orchid.connection.ConnectionComponent
 
 /**
  * User: Igor Petruk
@@ -17,7 +18,7 @@ import com.orchid.tree.{FilesystemError, FilesystemTreeComponent, Node, Filesyst
 @RunWith(classOf[JUnitRunner])
 class FilesystemTest extends FunSpec with GivenWhenThen{
 
-  class FilesystemTestComponent extends FilesystemTreeComponent
+  class FilesystemTestComponent extends FilesystemTreeComponent with ConnectionComponent
   
   def fixture = new {
     val component = new FilesystemTestComponent

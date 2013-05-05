@@ -13,10 +13,11 @@ import concurrent.{ExecutionContext, Await}
 import concurrent.duration.Duration
 import ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import com.orchid.connection.ConnectionComponent
 
 @RunWith(classOf[JUnitRunner])
 class FilesystemTreeStorageTest extends FunSpec with GivenWhenThen{
-  class FilesystemTestComponent extends FilesystemTreeComponent
+  class FilesystemTestComponent extends FilesystemTreeComponent with ConnectionComponent
 
   def fixture = new {
     val component = new FilesystemTestComponent

@@ -4,6 +4,7 @@ import com.orchid.tree.{FilesystemTreeComponent}
 import com.orchid.logic.{BusinessLogicComponent}
 import com.orchid.journal.JournalComponent
 import com.orchid.flow.{HandlersComponent, FlowConnectorComponent}
+import com.orchid.connection.ConnectionComponent
 
 /**
  * User: Igor Petruk
@@ -15,7 +16,8 @@ abstract class MainComponentBusinessLogic extends FilesystemTreeComponent
                   with JournalComponent
                   with BusinessLogicComponent
                   with HandlersComponent
-                  with FlowConnectorComponent{
+                  with FlowConnectorComponent
+                  with ConnectionComponent{
   def start{
     flow.start()
   }

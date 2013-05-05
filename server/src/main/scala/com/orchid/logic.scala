@@ -14,7 +14,6 @@ import ring.ControlMessageType._
 import ring.{ControlMessage, EventType, ControlMessageType, RingElement}
 import tree.{FilesystemTreeComponentApi,Node,FilesystemTree}
 import com.lmax.disruptor.EventHandler
-import ch.qos.logback.core.util.FileUtil
 import com.orchid.utils.{ErrorConversions, FileUtils, UUIDConversions, EnumMap}
 
 /**

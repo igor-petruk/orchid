@@ -6,6 +6,7 @@ import annotation.tailrec
 import com.orchid.user.UserID
 import com.orchid.messages.generated.Messages.ErrorType
 import concurrent.TrieMap
+import com.orchid.connection.{ConnectionComponentApi, ConnectionApi, ClientPrincipal}
 
 /**
  * User: Igor Petruk
@@ -46,27 +47,31 @@ trait FilesystemTreeComponentApi {
 }
 
 trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
+  self: ConnectionComponentApi =>
+
   val filesystem = new FilesystemTreeImpl
 
-  case class NodePeers(node:Node, peers:List[UserID])
+  case class NodePeers(node:Node, peers:List[ClientPrincipal])
 
   class FilesystemTreeImpl extends FilesystemTree{
 
+    @volatile
     var rootNode:Node = Node(Node.rootNodeUUID,"ROOT",true, 0,
       immutable.HashMap[String, Node](),0)
 
-    val nodesById:mutable.Map[UUID, NodePeers]= TrieMap.empty
+    val nodesById = TrieMap[UUID, NodePeers]()
 
     def root = rootNode
 
     def discoverFile(id:UUID, peer: UserID):Boolean={
-      nodesById.get(id) match {
-        case Some(oldPeers) => {
-          nodesById += (id->NodePeers(oldPeers.node, peer::oldPeers.peers))
-          true
-        }
-        case _ => false
-      }
+//      nodesById.get(id) match {
+//        case Some(oldPeers) => {
+//          nodesById += (id->NodePeers(oldPeers.node, peer::oldPeers.peers))
+//          true
+//        }
+//        case _ => false
+//      }
+      true
     }
 
 
