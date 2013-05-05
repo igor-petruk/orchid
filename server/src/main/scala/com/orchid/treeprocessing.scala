@@ -303,7 +303,7 @@ class TreeSerializationProcessActor extends Actor with XMLUtils{
 
     def walk(node:Node):Int={
       val total = node.children.values.map(node=>walk(node)).sum + 1
-      if (total>chunkLimit){
+      if (total>chunkLimit || node.id == filesystem.root.id){
         val chunkProcessingActor = context.actorOf(Props[ChunkSerializingActor]())
         chunkProcessingActor ! SerializeChunk(folder, node, jointPoints.toSet)
         jointPoints.add(node.id)

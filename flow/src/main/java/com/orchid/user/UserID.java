@@ -8,6 +8,8 @@ import com.orchid.net.server.workers.output.OutputWorker;
  * User: Igor Petruk
  * Date: 26.01.12
  * Time: 21:37
+ *
+ * TODO: Please rename this
  */
 public class UserID {
     InputWorker inputWorker;

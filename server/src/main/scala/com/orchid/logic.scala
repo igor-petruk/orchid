@@ -6,11 +6,12 @@ import java.util.UUID
 
 import messages.generated.Messages
 import messages.generated.Messages.MessageType._
+import messages.generated.Messages.ErrorType._
 import messages.generated.Messages.{FileInfoResponse, MessageContainer, MessageType}
 import net.server.workers.output.OutputPublisher
 import collection.immutable.HashMap
 import ring.ControlMessageType._
-import ring.{EventType, ControlMessageType, RingElement}
+import ring.{ControlMessage, EventType, ControlMessageType, RingElement}
 import tree.{FilesystemTreeComponentApi,Node,FilesystemTree}
 import com.lmax.disruptor.EventHandler
 import ch.qos.logback.core.util.FileUtil
@@ -64,13 +65,16 @@ trait BusinessLogicComponent extends BusinessLogicComponentApi
 
 trait MessageHandler{
   type MessageTypeToHandle
+  type MessageTypeClass
   def handle(event: RingElement)
 
   def handles:List[MessageTypeToHandle]
+  def extractMessage(event:RingElement):MessageTypeClass
 }
 
 trait DataMessageHandler extends MessageHandler{
   type MessageTypeToHandle = MessageType
+  type MessageTypeClass= MessageContainer
 
   def extractMessage(event:RingElement)=
     event.getMessage.asInstanceOf[MessageContainer]
@@ -84,6 +88,7 @@ trait DataMessageHandler extends MessageHandler{
 
 trait ControlMessageHandler extends MessageHandler{
   type MessageTypeToHandle = ControlMessageType
+  type MessageTypeClass = ControlMessage
 
   def extractMessage(event:RingElement)=event.getControlMessage
 }
@@ -176,22 +181,28 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
         else
           filesystem.file(fileInfoRequest.getName)
 
-        for (file <- fileFound){
-          val response = createMessage(FILE_INFO_RESPONSE)
-          response.setCookie(message.getCookie)
-
-          if (fileInfoRequest.getListDirectory){
-            for (child <- file.children.values){
-              val info = buildFileInfo(child.name, child)
+        val response = createMessage(FILE_INFO_RESPONSE)
+        fileFound match {
+          case Some(file)=>{
+            if (fileInfoRequest.getListDirectory){
+              for (child <- file.children.values){
+                val info = buildFileInfo(child.name, child)
+                response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
+              }
+            }else{
+              val info = buildFileInfo(file.name, file)
               response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
             }
-          }else{
-            val info = buildFileInfo(file.name, file)
-            response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
+            response
           }
-
-          publisher.send(response.build(), event.getUserID)
+          case None => {
+            response.setError(Messages.Error.newBuilder()
+              .setErrorType(FILE_NOT_FOUND)
+              .setDescription("Unable to find file"))
+          }
         }
+        response.setCookie(message.getCookie)
+        publisher.send(response.build(), event.getUserID)
       }
     }
 
