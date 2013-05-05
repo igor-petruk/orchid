@@ -1,19 +1,20 @@
 package com.orchid
 
 import org.scalatest.{GivenWhenThen, FunSpec}
-import com.orchid.table.{Table, Index}
+import com.orchid.table.{CollectionIndex, SimpleIndex, Table, Index}
 
 class TableTest extends FunSpec with GivenWhenThen{
-  case class User(name:String, lastName: String, age:Int)
+  case class User(name:String, lastName: String, age:Int, visited: Set[String])
 
-  val nameIndex = Index[User](_.name)
-  val lastNameIndex = Index[User](_.lastName)
-  val ageIndex = Index[User](_.age.asInstanceOf[Integer])
+  val nameIndex = SimpleIndex[User](_.name)
+  val lastNameIndex = SimpleIndex[User](_.lastName)
+  val ageIndex = SimpleIndex[User](_.age.asInstanceOf[Integer])
+  val visitedIndex = CollectionIndex[User](_.visited)
 
-  val user1 = User("Igor","Petruk",23)
-  val user2 = User("Rocksy","Seletska",22)
-  val user3 = User("Someone","Else",22)
-  val all = Set(user1, user2)
+  val user1 = User("Igor","Petruk",23,Set("Ukraine","USA","UK"))
+  val user2 = User("Rocksy","Seletska",22, Set("Ukraine","Russia"))
+  val user3 = User("Someone","Else",22, Set("USA","Japan"))
+  val all = Set(user1, user2, user3)
 
   def fixture={
      Table[User]()
@@ -37,17 +38,20 @@ class TableTest extends FunSpec with GivenWhenThen{
       val tableList = table.toSeq
       assert(tableList.contains(user1) === true)
       assert(tableList.contains(user2) === true)
+      assert(tableList.contains(user3) === true)
     }
 
     it("should support index query"){
       Given("When following set is added "+all)
-      val table = fixture + user1 + user2
+      val table = fixture.withIndex(visitedIndex) + user1 + user2 + user3
       Then(s"query on nameIndex on ${user1.name} should return Some(Set($user1))")
       assert(table(nameIndex).get(user1.name) === Some(Set(user1)))
       Then(s"query on nameIndex on ${user2.name} should return Some(Set($user2))")
       assert(table(nameIndex).get(user2.name) === Some(Set(user2)))
       Then(s"query on nameIndex on Cookie should return None")
       assert(table(nameIndex).get("Cookie") === None)
+      Then(s"query on visitedIndex on Ukraine should return Some(Set($user1,$user2))")
+      assert(table(visitedIndex).get("Ukraine") === Some(Set(user1,user2)))
     }
 
     it("should support index creation after db fill up"){
@@ -71,7 +75,7 @@ class TableTest extends FunSpec with GivenWhenThen{
 
     it("should support items removal"){
       Given("When following set is added "+(all+user3))
-      var table = fixture.withIndex(ageIndex) + user1 + user2 + user3
+      var table = fixture.withIndex(ageIndex).withIndex(visitedIndex) + user1 + user2 + user3
       And(s"$user2 is removed")
       table -= user2
       Then(s"query on nameIndex on ${user1.name} should return Some(Set($user1))")
@@ -80,6 +84,8 @@ class TableTest extends FunSpec with GivenWhenThen{
       assert(table(nameIndex).get(user2.name) === None)
       Then(s"query on ageIndex on ${user2.age} should return Some(Set($user3))")
       assert(table(ageIndex).get(user2.age.asInstanceOf[Integer]) === Some(Set(user3)))
+      Then(s"query on visitedIndex on Ukraine should return Some(Set($user1))")
+      assert(table(visitedIndex).get("Ukraine") === Some(Set(user1)))
     }
   }
 }
