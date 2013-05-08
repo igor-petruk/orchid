@@ -30,13 +30,13 @@ enum MessageType{
 
 // This message tells other peer's name
 message Introduce{
-    required string name = 1;
+    required bytes name = 1;
     required int32 incomingPort = 2;
 }
 
 // This message informs that file is available
 message DiscoverFile{
-    repeated GeneralFileInfo files = 1;
+    repeated bytes files = 1;
 }
 
 message CreateFile{
@@ -48,7 +48,7 @@ message GetFilePeers{
 }
 
 message Peer{
-	required string name = 1;
+	required bytes name = 1;
 	required string address = 2;
 	required int32 port = 3;
 }

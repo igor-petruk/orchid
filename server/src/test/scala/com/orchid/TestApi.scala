@@ -3,18 +3,18 @@ package com.orchid.test
 import java.net.Socket
 import java.nio.ByteBuffer
 import annotation.tailrec
-import java.io.{InputStream, OutputStream, IOException}
-import com.orchid.messages.generated.Messages.{MakeDirectory, CreateFile, MessageType, MessageContainer}
+import java.io.IOException
+import com.orchid.messages.generated.Messages._
 import java.util.UUID
-import com.orchid.tree.{FilesystemTreeComponent, Node, FilesystemTree}
-import com.orchid.utils.FileUtils
+import com.orchid.tree.{FilesystemTreeComponent, Node}
+import com.orchid.utils.{UUIDConversions, FileUtils}
 import com.orchid.messages.generated.Messages
-import com.orchid.flow.{HandlersComponentApi, FlowConnectorComponent, HandlersComponent}
+import com.orchid.flow.{HandlersComponentApi, FlowConnectorComponent}
 import com.orchid.logic.{BusinessLogicComponentApi, BusinessLogicHandlersComponentApi, BusinessLogicComponent}
-import com.orchid.journal.{JournalComponentApi, JournalComponent}
 import com.lmax.disruptor.EventHandler
 import com.orchid.ring.RingElement
 import com.orchid.connection.ConnectionComponent
+import scala.Some
 
 /**
  * User: Igor Petruk
@@ -104,15 +104,16 @@ trait ClientTools extends FileUtils{
     }  
   }
 
-  def receive()={
+  def receive(messageType: MessageType)={
     val size = ByteBuffer.wrap(fetchData(4)).getInt
-    MessageContainer.parseFrom(fetchData(size))
+    val message = MessageContainer.parseFrom(fetchData(size))
+    assert(message.getMessageType==messageType)
+    notifyError(message)
+    message
   }
 
   def receiveFileList={
-    val message = receive()
-    assert(message.getMessageType==MessageType.FILE_INFO_RESPONSE)
-    notifyError(message)
+    val message = receive(MessageType.FILE_INFO_RESPONSE)
     val response = message.getFileInfoResponse
     (for (info<-response.getInfosList) yield {
       Node(info.getFileId,info.getFileName,info.getIsDirectory,
@@ -125,11 +126,29 @@ trait ClientTools extends FileUtils{
   }
 }
 
-class TestApi(host:String, port:Int) extends ClientTools{
+class TestApi(host:String, port:Int) extends ClientTools with UUIDConversions{
   require(host!="")
   require(port>0)
 
   val socket = new Socket(host, port)
+  def introduce(id:UUID, port:Int)={
+    val container = MessageContainer.newBuilder().
+      setMessageType(MessageType.INTRODUCE)
+    container.setIntroduce(Introduce.newBuilder().
+      setIncomingPort(port).
+      setName(id)
+    )
+    send(container.build())
+  }
+
+  def discoverFile(id:UUID)={
+    val container = MessageContainer.newBuilder().
+      setMessageType(MessageType.DISCOVER_FILE)
+    container.setDiscoverFile(DiscoverFile.newBuilder().
+      addFiles(id)
+    )
+    send(container.build())
+  }
 
   def makeDir(dir:String)={
     val container = MessageContainer.newBuilder().
@@ -141,5 +160,30 @@ class TestApi(host:String, port:Int) extends ClientTools{
     send(container.build())
     val list = receiveFileList
     Some(list.head)
+  }
+
+  def createFile(id:UUID, name:String, size:Long)={
+    val container = MessageContainer.newBuilder().
+      setMessageType(MessageType.CREATE_FILE)
+    container.setCreateFile(CreateFile.newBuilder()
+      .setFiles(GeneralFileInfo.newBuilder()
+        .setFileId(id)
+        .setFileName(name)
+        .setFileSize(size)
+      )
+    )
+    send(container.build())
+    val list = receiveFileList
+    Some(list.head)
+  }
+
+  def getGetFilePeers(id:UUID)={
+    val container = MessageContainer.newBuilder().
+      setMessageType(MessageType.GET_FILE_PEERS)
+    container.setGetFilePeers(GetFilePeers.newBuilder().setFileId(id))
+    send(container.build())
+    val message = receive(MessageType.FILE_PEERS)
+    val response = message.getFilePeers
+    response
   }
 }

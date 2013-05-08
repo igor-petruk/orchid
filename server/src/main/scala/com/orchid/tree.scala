@@ -7,6 +7,7 @@ import com.orchid.user.UserID
 import com.orchid.messages.generated.Messages.ErrorType
 import concurrent.TrieMap
 import com.orchid.connection.{ConnectionComponentApi, ConnectionApi, ClientPrincipal}
+import com.orchid.table.{SimpleIndex, Table}
 
 /**
  * User: Igor Petruk
@@ -39,19 +40,20 @@ trait FilesystemTree {
   def file(path:String):Option[Node]
   def file(id:UUID):Option[Node]
   def setFile(parent: String, child:Node):Either[FilesystemError, Node]
-  def discoverFile(id:UUID, peer: UserID):Boolean
+  def discoverFile(id:UUID, principal: ClientPrincipal):Boolean
+  def nodesById:Map[AnyRef,Set[NodeInfo]]
 }
 
 trait FilesystemTreeComponentApi {
   val filesystem:FilesystemTree
 }
 
+case class NodeInfo(node:Node, peers:Set[ClientPrincipal])
+
 trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
   self: ConnectionComponentApi =>
 
   val filesystem = new FilesystemTreeImpl
-
-  case class NodePeers(node:Node, peers:List[ClientPrincipal])
 
   class FilesystemTreeImpl extends FilesystemTree{
 
@@ -59,22 +61,22 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
     var rootNode:Node = Node(Node.rootNodeUUID,"ROOT",true, 0,
       immutable.HashMap[String, Node](),0)
 
-    val nodesById = TrieMap[UUID, NodePeers]()
+    val nodesByIdIndex = SimpleIndex[NodeInfo](_.node.id)
+    @volatile
+    var nodesInfo = Table[NodeInfo]().withIndex(nodesByIdIndex)
+    def nodesById = nodesInfo(nodesByIdIndex)
 
     def root = rootNode
 
-    def discoverFile(id:UUID, peer: UserID):Boolean={
-//      nodesById.get(id) match {
-//        case Some(oldPeers) => {
-//          nodesById += (id->NodePeers(oldPeers.node, peer::oldPeers.peers))
-//          true
-//        }
-//        case _ => false
-//      }
-      true
+    def discoverFile(id:UUID, peer: ClientPrincipal):Boolean={
+      nodesById(id).headOption match {
+        case Some(node) => {
+          nodesInfo = nodesInfo - node + node.copy(peers=node.peers+peer)
+          true
+        }
+        case None => false
+      }
     }
-
-
 
     def dumpTree{
       def dumpNode(offset:String, node:Node){
@@ -85,7 +87,7 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
       dumpNode("",root)
     }
 
-    def file(id:UUID)= nodesById.get(id).map(_.node)
+    def file(id:UUID)= nodesById(id).headOption.map(_.node)
 
     def file(node:Node, fileName:String):Option[Node]=
       if (node.isDir)
@@ -131,7 +133,7 @@ trait FilesystemTreeComponent extends FilesystemTreeComponentApi{
 
       setFileAsChild(root, pathList) match {
         case Right(newRoot)=>
-          nodesById+=(child.id->NodePeers(child, List()))
+          nodesInfo += NodeInfo(child,Set())
           rootNode = newRoot
           Right(child)
         case error@Left(_) => error

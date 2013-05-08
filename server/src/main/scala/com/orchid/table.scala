@@ -84,6 +84,20 @@ class Table[T] private(
     new Table(indexFunctions, newIndexesMap)
   }
 
+//  def alter(index:Index[T], value: AnyRef, updateIndexes:Index[T]* = indexFunctions)(f: T=>T)={
+//    val items = apply(index)(value)
+//    val indexValues = indexFunctions.map(indexFunction=>(indexFunction->indexFunction.function(item)))
+//    val newIndexes = for ((symbol, indexValues)<-indexValues) yield {
+//      var currentMap = indexes.getOrElse(symbol, Map())
+//      for(indexValue<-indexValues){
+//        currentMap += (indexValue->(currentMap.getOrElse(indexValue,Set())+item))
+//      }
+//      (symbol-> currentMap)
+//    }
+//    val newIndexesMap = newIndexes.toMap
+//    new Table(indexFunctions, indexes)
+//  }
+
   def -(item:T)={
     val indexValues = indexFunctions.map(indexFunction=>(indexFunction->indexFunction.function(item)))
     val newIndexes = for ((symbol, indexValues)<-indexValues) yield {

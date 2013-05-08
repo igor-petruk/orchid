@@ -62,8 +62,8 @@ public class BufferIntegrationTests {
         BufferAggerator aggerator = new BufferAggerator(bufferPool, new StringMessageHandler());
         Messages.MessageContainer.Builder builder = Messages.MessageContainer.newBuilder();
         for (int i = 0; i < 10;i++){
-            builder.setIntroduce(Messages.Introduce.newBuilder().
-                    setName("oloo"+i).setIncomingPort(i)) ;
+            builder.setEcho(Messages.Echo.newBuilder().
+                    setTextValue("oloo"+i).setIntegerValue(i)) ;
             Messages.MessageContainer messageContainer = builder.build();
             //aggerator.r
         }

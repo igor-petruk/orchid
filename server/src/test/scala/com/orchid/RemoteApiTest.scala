@@ -8,6 +8,8 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSpec, fixture, GivenWhenThen, Spec}
 import org.junit.runner.RunWith
 import com.orchid.test.{EnvironmentVariableSettings, ServerFixtureSupport, TestFilesystemException, TestApi}
+import com.orchid.tree._
+import java.util.UUID
 
 /**
  * User: Igor Petruk
@@ -21,10 +23,15 @@ class RemoteApiTest extends FunSpec with GivenWhenThen with ServerFixtureSupport
   def fixture = new {
     startMemoryOnlyServer
     val api = new TestApi(host,port)
+    val api2 = new TestApi(host,port)
+    api.introduce(new UUID(1,2),7777)
+    api2.introduce(new UUID(6,2),7778)
   }
 
   describe("Remote API interaction"){
-    val api = fixture.api
+    val f = fixture
+    val api = f.api
+    val api2 = f.api2
     it ("should allow dir creation"){
       Given("empty filesystem")
       When("dir1 dir is created")
@@ -68,6 +75,16 @@ class RemoteApiTest extends FunSpec with GivenWhenThen with ServerFixtureSupport
         case TestFilesystemException(ErrorType.FILE_NOT_FOUND,_)=>
         case _ => fail()
       }
+    }
+    it ("should not allow file creating with discovery"){
+      Given("dir1 dir")
+      When("dir1/file1 dir is created")
+      val id = UUID.randomUUID()
+      val result = api.createFile(id,"dir1/file1",200)
+      api2.discoverFile(id)
+      Then("FILE_NOT_FOUND exception should be thrown")
+      val peers = api.getGetFilePeers(id)
+      println(peers)
     }
   }
   

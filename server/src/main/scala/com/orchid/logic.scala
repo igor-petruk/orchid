@@ -7,7 +7,7 @@ import java.util.UUID
 import messages.generated.Messages
 import messages.generated.Messages.MessageType._
 import messages.generated.Messages.ErrorType._
-import messages.generated.Messages.{FileInfoResponse, MessageContainer, MessageType}
+import messages.generated.Messages.{FilePeers, FileInfoResponse, MessageContainer, MessageType}
 import net.server.workers.output.OutputPublisher
 import collection.immutable.HashMap
 import ring.ControlMessageType._
@@ -15,6 +15,8 @@ import ring.{ControlMessage, EventType, ControlMessageType, RingElement}
 import tree.{FilesystemTreeComponentApi,Node,FilesystemTree}
 import com.lmax.disruptor.EventHandler
 import com.orchid.utils.{ErrorConversions, FileUtils, UUIDConversions, EnumMap}
+import com.orchid.connection.{ClientPrincipal, ConnectionComponentApi}
+import java.net.InetSocketAddress
 
 /**
  * User: Igor Petruk
@@ -30,7 +32,8 @@ trait BusinessLogicComponent extends BusinessLogicComponentApi
                              with BusinessLogicHandlersComponent{
   self:BusinessLogicComponentApi
         with FilesystemTreeComponentApi
-        with FlowConnectorComponentApi=>
+        with FlowConnectorComponentApi
+        with ConnectionComponentApi=>
 
   val businessLogic = new BusinessLogicEventHandler
 
@@ -100,15 +103,23 @@ trait BusinessLogicHandlersComponentApi{
 trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
   self: BusinessLogicComponentApi with
     FlowConnectorComponentApi with
+    ConnectionComponentApi with
     FilesystemTreeComponentApi=>
 
-    class ControlHandlersAll extends ControlMessageHandler{
-      def handles = List(USER_CONNECTED, USER_DISCONNECTED)
+    class UserConnectedHandler extends ControlMessageHandler{
+      def handles = List(USER_CONNECTED)
 
       def handle(event: RingElement) ={
-        println(extractMessage(event).getControlMessageType)
       }
     }
+
+  class UserDisconnectedHandler extends ControlMessageHandler{
+    def handles = List(USER_DISCONNECTED)
+
+    def handle(event: RingElement) ={
+      connectionApi.cleanupUser(event.getUserID)
+    }
+  }
 
     class EchoHandlerData(publisher:OutputPublisher) extends DataMessageHandler{
       def handles = List(ECHO)
@@ -117,6 +128,57 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
         publisher.send(event.getMessage, event.userID)
       }
     }
+
+  class IntroduceHandlerData() extends DataMessageHandler with UUIDConversions{
+    def handles = List(INTRODUCE)
+
+    def handle(event: RingElement){
+      val message = extractMessage(event)
+      val introduce = message.getIntroduce
+      connectionApi.connectUser(ClientPrincipal(introduce.getName),event.getUserID, introduce.getIncomingPort)
+    }
+  }
+
+  class GetFilePeersHandler(filesystem:FilesystemTree,
+                                 publisher:OutputPublisher)
+    extends DataMessageHandler with FileUtils with ErrorConversions{
+    def handles = List(GET_FILE_PEERS)
+
+    def handle(event: RingElement){
+      val message = extractMessage(event)
+      val getFilePeers = message.getGetFilePeers
+      val fileId:UUID = getFilePeers.getFileId
+
+      val response = createMessage(FILE_PEERS)
+
+      connectionApi.sessionByConnection(event.getUserID) match {
+        case Some(session)=>{
+          filesystem.nodesById(fileId).headOption match {
+            case Some(info)=>{
+              val peersList = FilePeers.newBuilder()
+              for (peer<-info.peers){
+                val peerSession = connectionApi.sessionbyPrincipal(peer).head
+                val address = peerSession.connection.getConnection.getSocketChannel.getRemoteAddress.asInstanceOf[InetSocketAddress]
+                val ip = address.getAddress.getHostAddress
+                val port = peerSession.port
+                val name = peerSession.principal.id
+                peersList.addPeers(Messages.Peer.newBuilder()
+                  .setAddress(ip)
+                  .setPort(port)
+                  .setName(name))
+              }
+              response.setFilePeers(peersList)
+            }
+            case _=>
+          }
+        }
+        case _ =>
+      }
+
+      response.setCookie(message.getCookie)
+      publisher.send(response.build(), event.getUserID)
+    }
+  }
 
     class MakeDirectoryHandlerData(filesystem:FilesystemTree,
                                    publisher:OutputPublisher)
@@ -158,12 +220,14 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
         val fileNode = Node(file.getFileId, pathAndFile._2,
           file.getIsDirectory, file.getFileSize, HashMap.empty)
         filesystem.setFile(pathAndFile._1, fileNode)
-
-        val response = createMessage(FILE_INFO_RESPONSE)
-        val info = buildFileInfo(file.getFileName, fileNode)
-        response.setCookie(message.getCookie)
-        response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
-        publisher.send(response.build(), event.getUserID)
+        for (session<-connectionApi.sessionByConnection(event.getUserID)){
+          filesystem.discoverFile(fileNode.id, session.principal)
+          val response = createMessage(FILE_INFO_RESPONSE)
+          val info = buildFileInfo(file.getFileName, fileNode)
+          response.setCookie(message.getCookie)
+          response.setFileInfoResponse(FileInfoResponse.newBuilder().addInfos(info))
+          publisher.send(response.build(), event.getUserID)
+        }
       }
     }
 
@@ -215,8 +279,13 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
         val message = extractMessage(event)
         val discoverFile = message.getDiscoverFile
 
-        for(file<-discoverFile.getFilesList.toSeq){
-          filesystem.discoverFile(file.getFileId, event.getUserID)
+        connectionApi.sessionByConnection(event.getUserID) match {
+          case Some(clientData) => {
+            for(file<-discoverFile.getFilesList.toSeq){
+              filesystem.discoverFile(file, clientData.principal)
+            }
+          }
+          case None => // TODO
         }
       }
     }
@@ -224,12 +293,15 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
   lazy val dataMessageHandlers = List(
     new EchoHandlerData(outputPublisher),
     new DiscoverFileHandlerData(filesystem),
+    new IntroduceHandlerData(),
+    new GetFilePeersHandler(filesystem, outputPublisher),
     new MakeDirectoryHandlerData(filesystem, outputPublisher),
     new CreateFileHandlerData(filesystem, outputPublisher),
     new FileInfoRequestHandlerData(filesystem, outputPublisher))
 
   lazy val controlMessageHandlers:List[ControlMessageHandler] = List(
-    new ControlHandlersAll)
+    new UserConnectedHandler,
+    new UserDisconnectedHandler)
 }
 
 object HandlerUtils{
