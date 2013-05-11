@@ -19,6 +19,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.10</artifactId>
         </dependency>
@@ -27,6 +32,11 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.orchid</groupId>
+            <artifactId>orchid-messages</artifactId>
         </dependency>
 
     </dependencies>

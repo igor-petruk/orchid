@@ -14,9 +14,9 @@ import ring.ControlMessageType._
 import ring.{ControlMessage, EventType, ControlMessageType, RingElement}
 import tree.{FilesystemTreeComponentApi,Node,FilesystemTree}
 import com.lmax.disruptor.EventHandler
-import com.orchid.utils.{ErrorConversions, FileUtils, UUIDConversions, EnumMap}
 import com.orchid.connection.{ClientPrincipal, ConnectionComponentApi}
 import java.net.InetSocketAddress
+import util.{ErrorConversions, FileUtils}
 
 /**
  * User: Igor Petruk

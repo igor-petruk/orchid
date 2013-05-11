@@ -7,7 +7,6 @@ import java.io.IOException
 import com.orchid.messages.generated.Messages._
 import java.util.UUID
 import com.orchid.tree.{FilesystemTreeComponent, Node}
-import com.orchid.utils.{UUIDConversions, FileUtils}
 import com.orchid.messages.generated.Messages
 import com.orchid.flow.{HandlersComponentApi, FlowConnectorComponent}
 import com.orchid.logic.{BusinessLogicComponentApi, BusinessLogicHandlersComponentApi, BusinessLogicComponent}
@@ -15,6 +14,8 @@ import com.lmax.disruptor.EventHandler
 import com.orchid.ring.RingElement
 import com.orchid.connection.ConnectionComponent
 import scala.Some
+import com.orchid.util.{FileUtils}
+import com.orchid.UUIDConversions
 
 /**
  * User: Igor Petruk

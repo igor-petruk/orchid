@@ -11,7 +11,6 @@ import com.orchid.actors.AkkaActorsComponentApi
 import akka.actor.{ActorRef, Props, Actor}
 import akka.event.Logging
 import scala.Some
-import com.orchid.utils.{XMLUtils, UUIDConversions}
 import akka.pattern.ask
 import concurrent.{ExecutionContext, Future}
 import akka.util.Timeout
@@ -27,6 +26,7 @@ import com.fasterxml.uuid.impl.UUIDUtil
 import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream
 import com.google.common.io.LimitInputStream
 import com.google.protobuf.{InvalidProtocolBufferException, CodedOutputStream, CodedInputStream}
+import com.orchid.{UUIDConversions, XMLUtils}
 
 trait TreeSerialization{
   def serialize(filesystem:FilesystemTree, chunksCount:Int):Future[SerializationComplete]

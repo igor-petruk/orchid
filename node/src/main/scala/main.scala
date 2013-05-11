@@ -4,12 +4,15 @@ import com.orchid.node.akka2.AkkaSystem
 import com.orchid.tracker.client.{TrackerClientComponent, TrackerClient}
 import com.orchid.messages.generated.Messages.{Echo, MessageType, MessageContainer}
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.UUID
 
 object Runner{
   def main(argv:Array[String]){
     val main = new AkkaSystem with TrackerClientComponent{
+      val name = UUID.randomUUID()
       val host = "localhost"
       val port = 9800
+      val incomingPort = 10000
     }
 
     val cookie = new AtomicInteger()

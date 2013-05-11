@@ -2,7 +2,7 @@ package com.orchid.tracker.client
 
 import com.orchid.node.akka2._
 import akka.actor._
-import com.orchid.messages.generated.Messages.MessageContainer
+import com.orchid.messages.generated.Messages.{Introduce, MessageContainer}
 import java.net.Socket
 import java.io._
 
@@ -14,6 +14,9 @@ import com.orchid.util.scala.table.{SimpleIndex, Table}
 import com.orchid.util.scala.table.SimpleIndex
 import scala.Some
 import akka.actor.Terminated
+import com.orchid.messages.generated.Messages
+import java.util.UUID
+import com.orchid.UUIDConversions
 
 trait TrackerClientComponentApi{
   def trackerClient:TrackerClientApi
@@ -22,22 +25,27 @@ trait TrackerClientComponentApi{
 trait TrackerClientComponent extends TrackerClientComponentApi{
     self: AkkaSystem =>
 
+  def name:UUID
   def host:String
   def port:Int
+  def incomingPort:Int
 
-  lazy val trackerClient: TrackerClientApi = new TrackerClient(actorSystem,trackerClientOperations,host, port)
+  lazy val trackerClient: TrackerClientApi = new TrackerClient(actorSystem,trackerClientOperations,host, port,incomingPort, name)
 }
 
 trait TrackerClientApi{
   def sendMessage(msg: MessageContainer):Future[MessageContainer]
 }
 
-case class MessageSendingFailed() extends RuntimeException
+abstract class MessageSendingFailed extends RuntimeException
 case class ServerNotConnectedException() extends MessageSendingFailed
 case class MessageWritingFailed() extends MessageSendingFailed
 
-class TrackerClient(actorSystem: ActorSystem, pool: ExecutionContext, host:String, port:Int) extends TrackerClientApi{
-  val router = actorSystem.actorOf(Props(new MessageLifecycleActor(pool, host,port)))
+case class ServerException(e: Messages.Error) extends RuntimeException
+
+class TrackerClient(actorSystem: ActorSystem, pool: ExecutionContext,
+                    host:String, port:Int,incomingPort:Int, name:UUID) extends TrackerClientApi{
+  val router = actorSystem.actorOf(Props(new MessageLifecycleActor(pool, host,port, incomingPort, name)))
   implicit def activePool = pool
 
   def sendMessage(msg: MessageContainer):Future[MessageContainer] = {
@@ -57,9 +65,9 @@ case class CleanupOldMessages()
 
 case class PendingResponse(cookie:Long, promise:Promise[MessageContainer], timestamp: Long)
 
-class MessageLifecycleActor(pool: ExecutionContext, host:String, port:Int) extends Actor{
+class MessageLifecycleActor(pool: ExecutionContext, host:String, port:Int,incomingPort:Int, name:UUID) extends Actor{
   def buildClient = {
-    val client = context.actorOf(Props(new ClientActor(host, port)))
+    val client = context.actorOf(Props(new ClientActor(host, port,incomingPort, name)))
     context.watch(client)
     client
   }
@@ -111,20 +119,34 @@ class MessageLifecycleActor(pool: ExecutionContext, host:String, port:Int) exten
         queryResult<-responses(coookieResponsesIndex).get(message.getCookie.asInstanceOf[AnyRef]);
         response<-queryResult.headOption
       ){
-        response.promise.success(message)
+        if (message.hasError){
+          response.promise.failure(ServerException(message.getError))
+        }else{
+          response.promise.success(message)
+        }
         responses -= response
       }
     }
   }
 }
 
-class ClientActor(host:String, port:Int) extends Actor with ThreadingUtils{
+class ClientActor(host:String, port:Int, incomingPort:Int, name:UUID) extends Actor with ThreadingUtils with UUIDConversions{
   var socket:Socket = null
   var receivingThread:Thread = null
+
+  def sendIntroduce{
+    val msg = MessageContainer.newBuilder().setMessageType(Messages.MessageType.INTRODUCE)
+      .setIntroduce(Introduce.newBuilder()
+        .setIncomingPort(incomingPort)
+        .setName(name))
+
+    sendToSocket(msg.build())
+  }
 
   override def preStart() {
     socket = new Socket(host, port)
     val in =  new DataInputStream(socket.getInputStream)
+    sendIntroduce
     receivingThread = buildThread {
       while(!Thread.interrupted()){
         val size = in.readInt();
