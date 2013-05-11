@@ -5,7 +5,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSpec, GivenWhenThen, Spec}
 import java.util.UUID
 import collection.immutable.HashMap
-import util.Random
+import java.util.Random
 import com.orchid.tree.{FilesystemError, FilesystemTreeComponent, Node, FilesystemTree}
 import com.orchid.connection.ConnectionComponent
 

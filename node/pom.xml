@@ -34,6 +34,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.orchid</groupId>
+            <artifactId>orchid-scala-utils</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
         </dependency>
@@ -51,6 +56,12 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_2.10</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.0.CR2</version>
         </dependency>
     </dependencies>
 

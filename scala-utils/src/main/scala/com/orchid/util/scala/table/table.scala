@@ -1,4 +1,4 @@
-package com.orchid.table
+package com.orchid.util.scala.table
 
 private[table] class CompoundIterator[T](iterators: Iterator[Iterable[T]]) extends Iterator[T]{
   var current: Iterator[T] = if (iterators.hasNext) iterators.next().iterator else null

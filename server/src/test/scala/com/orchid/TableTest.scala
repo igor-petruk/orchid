@@ -1,7 +1,7 @@
 package com.orchid
 
 import org.scalatest.{GivenWhenThen, FunSpec}
-import com.orchid.table.{CollectionIndex, SimpleIndex, Table, Index}
+import util.scala.table.{Table, CollectionIndex, SimpleIndex}
 
 class TableTest extends FunSpec with GivenWhenThen{
   case class User(name:String, lastName: String, age:Int, visited: Set[String])

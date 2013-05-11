@@ -44,6 +44,11 @@
 
         <dependency>
             <groupId>com.orchid</groupId>
+            <artifactId>orchid-scala-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.orchid</groupId>
             <artifactId>orchid-utils</artifactId>
         </dependency>
 

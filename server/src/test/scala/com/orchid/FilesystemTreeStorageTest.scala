@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{GivenWhenThen, FunSpec}
 import com.orchid.tree.{Node, FilesystemTree, FilesystemTreeComponent}
-import util.Random
+import java.util.Random
 import java.util.UUID
 import com.orchid.treeprocessing.TreeSerializationComponent
 import java.io.{FileNotFoundException, File}

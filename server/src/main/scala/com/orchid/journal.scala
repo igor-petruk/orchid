@@ -21,7 +21,7 @@ trait JournalComponent extends JournalComponentApi{
     val mutatingMessages = List(MAKE_DIRECTORY, CREATE_FILE, DISCOVER_FILE)
     
     def onEvent(event: RingElement, sequence: Long, endOfBatch: Boolean) {
-      println(event.getUserID+": "+event.getMessage)
+      println(event.getUserID+": "+event.getMessage+"/"+event.getControlMessage)
     }
   }
 }

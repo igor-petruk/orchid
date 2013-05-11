@@ -7,7 +7,7 @@ import com.orchid.user.UserID
 import com.orchid.messages.generated.Messages.ErrorType
 import concurrent.TrieMap
 import com.orchid.connection.{ConnectionComponentApi, ConnectionApi, ClientPrincipal}
-import com.orchid.table.{SimpleIndex, Table}
+import com.orchid.util.scala.table.{Table, SimpleIndex}
 
 /**
  * User: Igor Petruk

@@ -48,7 +48,7 @@ public class BufferAggerator implements Closeable{
                     int bytesRead = channel.read(sizeBuffer);
                     if (bytesRead==-1)
                         return false;
-                    if (bytesRead<4)
+                    if (bytesRead<4 && bytesRead!=0)
                         return true;
                     sizeBuffer.rewind();
                     currentMessageSize = sizeBuffer.getInt();

@@ -2,7 +2,7 @@ package com.orchid.connection
 
 import com.orchid.user.UserID
 import java.util.UUID
-import com.orchid.table.{SimpleIndex, Table}
+import com.orchid.util.scala.table.{Table, SimpleIndex}
 
 case class ClientPrincipal(id:UUID)
 
@@ -44,7 +44,10 @@ trait ConnectionComponent extends ConnectionComponentApi{
     }
 
     def cleanupUser(connection: UserID){
-      for (session <- byConnection(connection).headOption){
+      for (
+        sessionSearchResult <- byConnection.get(connection);
+        session <- sessionSearchResult.headOption
+      ){
         sessions -= session
       }
     }
