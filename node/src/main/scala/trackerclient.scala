@@ -20,17 +20,25 @@ import com.orchid.UUIDConversions
 
 trait TrackerClientComponentApi{
   def trackerClient:TrackerClientApi
+
+  def trackerClientConfig: TrackerClientConfig
+}
+
+trait TrackerClientConfig{
+  def name:UUID
+  def host:String
+  def port:Int
+  def incomingPort:Int
 }
 
 trait TrackerClientComponent extends TrackerClientComponentApi{
     self: AkkaSystem =>
 
-  def name:UUID
-  def host:String
-  def port:Int
-  def incomingPort:Int
-
-  lazy val trackerClient: TrackerClientApi = new TrackerClient(actorSystem,trackerClientOperations,host, port,incomingPort, name)
+  lazy val trackerClient: TrackerClientApi = new TrackerClient(actorSystem,trackerClientOperations,
+    trackerClientConfig.host,
+    trackerClientConfig.port,
+    trackerClientConfig.incomingPort,
+    trackerClientConfig.name)
 }
 
 trait TrackerClientApi{
