@@ -15,6 +15,7 @@
         <module>server</module>
         <module>utils</module>
         <module>flow</module>
+        <module>node</module>
     </modules>
 
     <properties>

@@ -4,7 +4,6 @@ import com.google.guiceberry.GuiceBerryModule;
 import com.google.guiceberry.junit4.GuiceBerryRule;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import com.google.inject.TypeLiteral;
 import com.google.inject.util.Modules;
 import com.lmax.disruptor.EventHandler;
 import com.orchid.logging.LoggingModule;
@@ -20,7 +19,6 @@ import com.orchid.ring.EventType;
 import com.orchid.ring.InputRingModule;
 import com.orchid.ring.RingElement;
 import com.orchid.net.streams.BufferSize;
-import com.orchid.serialization.ProtobufMessageSerializationModule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,8 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.junit.Assert.*;
 
 /**
  * User: Igor Petruk
@@ -182,7 +178,6 @@ public class ServerIntegrationTests {
         @Override
         protected void configure() {
             super.configure();
-            install(new ProtobufMessageSerializationModule());
             install(new LoggingModule());
             install(Modules.override(new NetworkServerModule("localhost",9800)).
                     with(new NetworkServerExtension()));
