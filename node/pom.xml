@@ -91,16 +91,33 @@
             <artifactId>resteasy-jaxrs</artifactId>
             <version>3.0-beta-3</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.jboss.resteasy</groupId>-->
-            <!--<artifactId>resteasy-netty</artifactId>-->
-            <!--<version>3.0-beta-3</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>async-http-servlet-3.0</artifactId>
+            <version>3.0-beta-5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.0.3.v20130506</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>9.0.3.v20130506</version>
+        </dependency>
 
         <dependency>
-            <groupId>org.eclipse.jetty.aggregate</groupId>
-            <artifactId>jetty-all</artifactId>
-            <version>9.0.3.v20130506</version>
+            <groupId>com.orchid</groupId>
+            <artifactId>orchid-server</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.10</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

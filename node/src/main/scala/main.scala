@@ -9,12 +9,13 @@ import com.orchid.node.http.{HttpServerConfig, NettyHttpServerComponent}
 import com.orchid.node.rest.JaxRsRestServicesComponent
 
 object Runner{
+  trait NodeApplication extends AkkaSystem
+  with TrackerClientComponent
+  with NettyHttpServerComponent
+  with JaxRsRestServicesComponent
+
   def main(argv:Array[String]){
-    val core = new AkkaSystem
-               with TrackerClientComponent
-               with NettyHttpServerComponent
-               with JaxRsRestServicesComponent
-     {
+    val core = new NodeApplication{
       val trackerClientConfig = new TrackerClientConfig{
         val name = UUID.randomUUID()
         val host = "localhost"

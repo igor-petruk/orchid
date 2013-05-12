@@ -1,6 +1,6 @@
 package com.orchid.node.rest
 
-import javax.ws.rs.{Produces, GET, Path}
+import javax.ws.rs.{PathParam, Produces, GET, Path}
 import org.jboss.resteasy.annotations.Suspend
 import org.jboss.resteasy.spi.AsynchronousResponse
 import javax.ws.rs.core.{MediaType, Response}
@@ -18,11 +18,20 @@ trait JaxRsRestServicesComponent extends RestServicesComponentApi{
 
 case class Cookie(name:String)
 
-@Path(value="/")
+@Path(value="/rest")
 class RestServices extends RestServicesApi{
   @GET
-  @Path(value="/hi")
+  @Path(value="/files{path:.*}")
   @Produces(value=Array(MediaType.APPLICATION_JSON))
-  def cookieCookie = Cookie("test")
+  def fileGet(@PathParam("path") path: String) = handlePath(path)
+
+  @GET
+  @Path(value="/files")
+  @Produces(value=Array(MediaType.APPLICATION_JSON))
+  def fileGet = handlePath("")
+
+  def handlePath(path:String)={
+    Response.ok(Cookie("path:"+path)).build()
+  }
 
 }

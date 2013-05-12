@@ -5,7 +5,7 @@ option optimize_for=SPEED;
 enum MessageType{
     INTRODUCE = 1;
     DISCOVER_FILE = 2;
-    WELCOME_ON_SERVER = 3;
+    SUCCESS = 3;
     
     GET_FILE_PEERS = 4;
     FILE_PEERS = 5;
@@ -62,11 +62,6 @@ message GeneralFileInfo{
     required bytes fileId = 3;
     optional bool isDirectory = 4  [default = false];
     optional int64 fileSize = 5 [default = 0];
-}
-
-// This messages server sends after he received INTRODUCE
-message Welcome{
-    optional string welcomeString = 1;
 }
 
 message BlockInfoRequest{
@@ -141,7 +136,6 @@ message MessageContainer{
     optional int32 cookie = 2;
 	
     optional DiscoverFile discoverFile = 3;
-    optional Welcome welcome = 4;
 
     optional GetFilePeers getFilePeers = 5;
     optional FilePeers filePeers = 6;

@@ -16,6 +16,7 @@ import tree.{FilesystemTreeComponentApi,Node,FilesystemTree}
 import com.lmax.disruptor.EventHandler
 import com.orchid.connection.{ClientPrincipal, ConnectionComponentApi}
 import java.net.InetSocketAddress
+import user.UserID
 import util.{ErrorConversions, FileUtils}
 
 /**
@@ -86,6 +87,11 @@ trait DataMessageHandler extends MessageHandler{
     builder.setMessageType(messageType)
     builder
   }
+
+  def respondSuccess(publisher: OutputPublisher, sender:UserID, cookie:Int){
+    val message = createMessage(MessageType.SUCCESS).setCookie(cookie)
+    publisher.send(message.build(), sender)
+  }
 }
 
 trait ControlMessageHandler extends MessageHandler{
@@ -129,13 +135,14 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
       }
     }
 
-  class IntroduceHandlerData() extends DataMessageHandler with UUIDConversions{
+  class IntroduceHandlerData(publisher:OutputPublisher) extends DataMessageHandler with UUIDConversions{
     def handles = List(INTRODUCE)
 
     def handle(event: RingElement){
       val message = extractMessage(event)
       val introduce = message.getIntroduce
       connectionApi.connectUser(ClientPrincipal(introduce.getName),event.getUserID, introduce.getIncomingPort)
+      respondSuccess(publisher, event.getUserID, message.getCookie)
     }
   }
 
@@ -269,7 +276,7 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
       }
     }
 
-    class DiscoverFileHandlerData (filesystem:FilesystemTree)
+    class DiscoverFileHandlerData (publisher:OutputPublisher,filesystem:FilesystemTree)
       extends DataMessageHandler with UUIDConversions{
       def handles = List(DISCOVER_FILE)
 
@@ -287,13 +294,14 @@ trait BusinessLogicHandlersComponent extends BusinessLogicHandlersComponentApi{
           }
           case None => // TODO
         }
+        respondSuccess(publisher, event.getUserID, message.getCookie)
       }
     }
 
   lazy val dataMessageHandlers = List(
     new EchoHandlerData(outputPublisher),
-    new DiscoverFileHandlerData(filesystem),
-    new IntroduceHandlerData(),
+    new DiscoverFileHandlerData(outputPublisher,filesystem),
+    new IntroduceHandlerData(outputPublisher),
     new GetFilePeersHandler(filesystem, outputPublisher),
     new MakeDirectoryHandlerData(filesystem, outputPublisher),
     new CreateFileHandlerData(filesystem, outputPublisher),

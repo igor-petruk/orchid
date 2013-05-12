@@ -1,20 +1,20 @@
 package com.orchid.node.http
 
-import io.netty.channel._
-import org.jboss.resteasy.spi.{AsynchronousResponse, ResteasyDeployment}
+import org.jboss.resteasy.spi.{ResteasyDeployment}
 import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.ServletHolder
-import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher
+import org.eclipse.jetty.servlet.{FilterHolder, ServletHolder}
+import org.jboss.resteasy.plugins.server.servlet.{Filter30Dispatcher, HttpServlet30Dispatcher}
 import org.eclipse.jetty.webapp.WebAppContext
 
-import javax.ws.rs.{Consumes, Produces, GET, Path}
-import org.jboss.resteasy.annotations.Suspend
-import javax.ws.rs.core.{MediaType, Response}
+import javax.ws.rs.{Consumes, Produces}
+import javax.ws.rs.core.{MediaType}
 import com.orchid.node.rest.{RestServicesApi, RestServicesComponentApi}
-import com.fasterxml.jackson.databind.{MapperFeature, ObjectMapper}
+import com.fasterxml.jackson.databind.{ObjectMapper}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import javax.ws.rs.ext.{ContextResolver, Provider}
-import com.fasterxml.jackson.core.JsonFactory.Feature
+import org.eclipse.jetty.util.resource.Resource
+import java.util
+import javax.servlet.DispatcherType
 
 trait HttpServerConfig{
   def incomingPort:Int
@@ -40,16 +40,16 @@ class NettyHttpServer(config: HttpServerConfig, restServices: RestServicesApi) e
    def start(){
      val deployment = new ResteasyDeployment();
 
-//     val om = deployment.getProviderFactory.injectedInstance(classOf[ObjectMapper])
-//     om.registerModule(DefaultScalaModule)
-     deployment.getProviders.add(new JacksonContextResolver)
+     deployment.getProviders.add(new ScalaEnabledObjectMapperContextResolver)
      deployment.getResources.add(restServices)
 
      val server = new Server(config.incomingPort)
      val context = new WebAppContext();
      context.setContextPath("/")
-     context.setResourceBase("/")
-     context.addServlet(new ServletHolder(new HttpServletDispatcher()), "/*");
+     context.setBaseResource(Resource.newClassPathResource("/www"))
+     context.addServlet(new ServletHolder(new HttpServlet30Dispatcher()), "/rest/*");
+     context.addFilter(new FilterHolder(new Filter30Dispatcher()),"/www/*",
+       util.EnumSet.of(DispatcherType.ASYNC,DispatcherType.FORWARD, DispatcherType.REQUEST))
      context.setAttribute(classOf[ResteasyDeployment].getName(), deployment);
      server.setHandler(context)
      server.setStopAtShutdown(true);
@@ -60,7 +60,7 @@ class NettyHttpServer(config: HttpServerConfig, restServices: RestServicesApi) e
 @Provider
 @Produces(value=Array(MediaType.APPLICATION_JSON))
 @Consumes(value=Array(MediaType.APPLICATION_JSON))
-class JacksonContextResolver extends ContextResolver[ObjectMapper] {
+class ScalaEnabledObjectMapperContextResolver extends ContextResolver[ObjectMapper] {
 
   val objectMapper = {
     val om = new ObjectMapper();
