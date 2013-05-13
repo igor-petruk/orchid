@@ -7,12 +7,16 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.UUID
 import com.orchid.node.http.{HttpServerConfig, NettyHttpServerComponent}
 import com.orchid.node.rest.JaxRsRestServicesComponent
+import com.orchid.node.file.{FileStorageConfig, FileStorageComponent}
+import com.orchid.node.restclient.RestClientComponent
 
 object Runner{
   trait NodeApplication extends AkkaSystem
   with TrackerClientComponent
   with NettyHttpServerComponent
   with JaxRsRestServicesComponent
+  with FileStorageComponent
+  with RestClientComponent
 
   def main(argv:Array[String]){
     val core = new NodeApplication{
@@ -26,33 +30,12 @@ object Runner{
       val httpServerConfig = new HttpServerConfig{
         def incomingPort = 10000
       }
+
+      val fileStorageConfig = new FileStorageConfig{
+        val storageDirectory = "./storage/"
+      }
     }
 
     core.httpServer.start()
-//    val cookie = new AtomicInteger()
-//
-//    implicit val pool = main.trackerClientOperations
-//
-//    for (i <- 0 to 100000){
-//      val message = MessageContainer.newBuilder()
-//        .setMessageType(MessageType.ECHO)
-//        .setCookie(cookie.incrementAndGet())
-//        .setEcho(Echo.newBuilder()).build
-//
-//      val echoResponse = main.trackerClient.sendMessage(message)
-//
-//      echoResponse.onSuccess{
-//        case response => println("WOW "+response)
-//      }
-//
-//      echoResponse.onFailure{
-//        case e:Exception => {
-//          print("NOOO ")
-//          e.printStackTrace()
-//        }
-//      }
-//
-//      Thread.sleep(500)
-//    }
   }
 }

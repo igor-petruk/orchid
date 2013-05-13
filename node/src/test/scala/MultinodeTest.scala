@@ -6,17 +6,33 @@ import java.util.{UUID, Scanner}
 import com.orchid.tracker.client.TrackerClientConfig
 import com.orchid.node.http.HttpServerConfig
 import com.ochid.node.runner.Runner.NodeApplication
+import com.orchid.node.file.FileStorageConfig
+import java.io.{ByteArrayInputStream, File}
+import org.apache.commons.io.FileUtils
 
-class MultinodeTest extends FunSpec with GivenWhenThen with TrackerFixture with NodeFixture{
+import concurrent.ExecutionContext.Implicits.global
+import com.orchid.node.rest.Cookie
+import concurrent.Future
+
+class MultinodeTest extends FunSpec with GivenWhenThen
+    with TrackerFixture with NodeFixture{
 
   describe("multiple node configuration"){
     it("should run"){
       When("tracker is started")
       val tracker = trackerFixture("localhost",9800)
       When("nodes are started")
+      val storage = "./storage/"
+      val storageDir = new File(storage)
+      storageDir.mkdirs()
+      FileUtils.cleanDirectory(storageDir)
       val nodes = for(i <- 1 to 4) yield{
-        val node = nodeFixture(new UUID(i,i),"localhost", 9800, 9880+i)
+        val node = nodeFixture(new UUID(i,i),"localhost", 9800, 9880+i,storage+"/node"+i)
         node
+      }
+      val is = new ByteArrayInputStream("hello world".getBytes("UTF-8"))
+      for (_<-nodes(1).restClient.putInputStream("http://localhost:9881/rest/files/cookie/coo",is)){
+        println("DONE")
       }
       new Scanner(System.in).nextLine()
     }
@@ -35,7 +51,7 @@ trait TrackerFixture{
 }
 
 trait NodeFixture{
-  def nodeFixture(nodeName: UUID, trackerHost:String, trackerPort:Int, nodePort:Int)={
+  def nodeFixture(nodeName: UUID, trackerHost:String, trackerPort:Int, nodePort:Int, storageDir:String)={
     val app = new NodeApplication{
       val trackerClientConfig = new TrackerClientConfig{
         val name = nodeName
@@ -45,11 +61,16 @@ trait NodeFixture{
       }
 
       val httpServerConfig = new HttpServerConfig{
-        def incomingPort = nodePort
+        val incomingPort = nodePort
+      }
+
+      val fileStorageConfig = new FileStorageConfig{
+        val storageDirectory = storageDir
       }
     }
     app.httpServer.start()
     app.trackerClient
+    app.fileStorage
     app
   }
 }
